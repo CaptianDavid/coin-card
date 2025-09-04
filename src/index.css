@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* .gittu-banner-right {
+  width: 512px;
+  max-width: 100%;
+  margin-left: auto;
+  position: relative;
+
+  .overlay {
+    position: absolute;
+    z-index: 9;
+    top: -65px;
+    left: -65px;
+    img {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+    }
+  }
+
+  .presale-live-btn {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: ${({ theme }) => theme.colors.bgPresaleBtn};
+    backdrop-filter: blur(10px);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    > img {
+      width: 100px !important;
+      height: 100px !important;
+      animation: rotateImg 15s infinite linear;
+    }
+    .icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      svg {
+        font-size: 24px;
+        color: white;
+        transition: 0.3s;
+      }
+    }
+
+    &:hover {
+      .icon svg {
+        color: white;
+        transform: rotate(-45deg);
+      }
+    }
+  }
+
+  @keyframes rotateImg {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+} */
+
+
+ /* @media screen and (max-width: 575px) {
+
+    .gittu-banner-right {
+      padding-left: 0px;
+      .overlay {
+        top: -45px;
+        img {
+          width: 90px;
+          height: 90px;
+        }
+      }
+
+      .presale-live-btn {
+        width: 90px;
+        height: 90px;
+        padding: 10px;
+      }
+    }
+
+    .presale-item {
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .gittu-banner-card {
+      padding: 20px 0px;
+      .gittu-banner-card-inner {
+        padding: 20px;
+      }
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .banner-title {
+      font-size: 32px;
+      line-height: 50px;
+    }
+
+    .gittu-banner-left {
+      h2 {
+        font-size: 32px;
+        line-height: 50px;
+      }
+      h5 {
+        font-size: 16px;
+      }
+    }
+  } */
