@@ -96,7 +96,7 @@ const CardComponent = () => {
                     </h2>
                   </div>
 
-                  <div className="presale-item mb-7">
+                  <div className="presale-item mb-4">
                     <div className="presale-item-inner">
                       <h6>Select Token</h6>
                       <SelectDropdown
@@ -116,7 +116,7 @@ const CardComponent = () => {
                     </div>
                   </div>
 
-                  <div className="presale-item mb-10">
+                  <div className="presale-item mb-11">
                     <div className="presale-item-inner">
                       <h6>$ Amount</h6>
 
@@ -138,19 +138,19 @@ const CardComponent = () => {
                     </div>
                   </div>
 
-                  <div className="my-4 mb-5 !text-sm sm:!text-base text-white/90">
-                    <h4>Limited: Launch-Day Bonus —10%</h4>
-                  </div>
+                  {/* <div className="my-4 mb-6 !text-sm sm:!text-base text-white/90">
+                    <h4></h4>
+                  </div> */}
 
                   <ul className="token-info-list mb-30">
                     <li>
-                      <p>Bonus</p>
+                      <p className="max-[310px]:max-w-[8rem]">Limited: Launch Bonus</p>
 
                       <p>10%</p>
                     </li>
-                    <li>
-                      <p>Total Amount</p>
-                      <p>
+                    <li className="text-white">
+                      <p className="">Total Amount:</p>
+                      <p className="!text-right">
                         {getAmount ? getAmount.toFixed(0) : "0"} +{" "}
                         {bonusAmount ? bonusAmount.toFixed(0) : "0"} Bonus
                       </p>
