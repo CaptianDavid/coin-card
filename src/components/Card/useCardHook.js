@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { coins } from "../../helpers";
-import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 
 const BONUS_PERCENT = 10;
