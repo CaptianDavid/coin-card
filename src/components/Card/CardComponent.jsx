@@ -146,7 +146,7 @@ const CardComponent = ({
                       />
                     </div>
                     <div className="presale-item-inner">
-                      <h6>Get Amount (STAYX) </h6>
+                      <h6>Get Amount ($STAYX) </h6>
                       <input
                         type="text"
                         placeholder="0"
@@ -166,8 +166,8 @@ const CardComponent = ({
 
                       <p>10%</p>
                     </li>
-                    <li className="text-white">
-                      <p className="">Total Amount:</p>
+                    <li className="text-white ">
+                      <p className="">Total Amount ($STAYX)</p>
                       <p className="!text-right">
                         {getAmount ? getAmount.toFixed(0) : "0"} +{" "}
                         {bonusAmount ? bonusAmount.toFixed(0) : "0"} Bonus

@@ -3,10 +3,10 @@ import styled from "styled-components";
 // import BackgroundImg from "../../../assets/images/banner/banner-bg.png";
 // //   background-image: url(${BackgroundImg});
 const BannerWrapper = styled.section`
-//   background-repeat: no-repeat;
+  //   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
-    
+
   // min-height: 100vh;
   // padding: 223px 0 170px 0;
   position: relative;
@@ -215,6 +215,10 @@ const BannerWrapper = styled.section`
       line-height: 30px;
       color: ${({ theme }) => theme.colors.white};
     }
+    li p:last-child {
+      margin-left: auto; /* pushes it to the right */
+      text-align: right; /* ensures multi-line aligns right */
+    }
   }
 
   .presale-back-btn {
@@ -258,7 +262,7 @@ const BannerWrapper = styled.section`
     input {
       width: 100%;
       padding: 16px;
-       box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
       background: #1e2939;
       border: 1px solid ${({ theme }) => theme.colors.white}1a;
       border-radius: 12px;
@@ -383,7 +387,6 @@ const BannerWrapper = styled.section`
         width: 90px;
         height: 90px;
         padding: 10px;
-        
       }
     }
 
