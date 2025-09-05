@@ -14,7 +14,7 @@ export const coins = [
     icon: "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
   },
   {
-    id: "polygon",
+    id: "matic-network",
     name: "Polygon",
     symbol: "MATIC",
     icon: "https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png",

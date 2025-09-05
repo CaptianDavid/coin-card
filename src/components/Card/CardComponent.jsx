@@ -7,64 +7,45 @@ import Abstrac2 from "../../assets/abstrac-2.png";
 import BannerWrapper from "./Banner.style";
 import Countdown from "../countdown/CountDown";
 import Progressbar from "../progessbar/Progessbar";
-import { useEffect, useState } from "react";
+
 import Button from "../button/Button";
 import TokenInfo from "../token/TokenInfo";
 import CoinList from "../CoinList";
 import SelectDropdown from "../select/SelectDropdown";
 import CopyIframeButton from "../CopyIframeButton";
 import { coins } from "../../helpers";
-
-const BONUS_PERCENT = 10;
-const STAYX_PRESALE_PRICE = 0.001;
+import useCardHook from "./useCardHook";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 const CardComponent = () => {
-  const [stageEnd, setStageEnd] = useState(1759284000);
+  const { openConnectModal } = useConnectModal();
+  const {
+    stageEnd,
+    selected,
+    amount,
+    isBuyNow,
+    setSelected,
+    setAmount,
+    getAmount,
+    bonusAmount,
 
-  const [selected, setSelected] = useState(
-    coins.find((c) => c.symbol === "BNB")
-  );
-  const [amount, setAmount] = useState("");
-  const [prices, setPrices] = useState({});
-  const [isBuyNow, setIsBuyNow] = useState(false);
+    buyNowHandle,
+    valueUsd,
+  } = useCardHook();
 
-  useEffect(() => {
-    const ids = coins.map((t) => t.id).join(",");
-    fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`
-    )
-      .then((res) => res.json())
-      .then(setPrices)
-      .catch(console.error);
-  }, []);
-
-  const priceUsd = prices[selected.id]?.usd || 0;
-  const valueUsd = amount ? amount * priceUsd : ""; // ✅ empty if no input
-  
-  const getAmount = valueUsd ? valueUsd / STAYX_PRESALE_PRICE : 0;
-  const bonusAmount = getAmount * (BONUS_PERCENT / 100); 
-  
-
-  const buyNowHandle = () => {
-    setIsBuyNow(!isBuyNow);
+  const buyToken = () => {
+    if (!openConnectModal) {
+      console.error("Connect modal not available");
+      return;
+    }
+    openConnectModal(); // this opens the wallet modal
   };
-  useEffect(() => {
-    if (isBuyNow) {
-      document.querySelector(".gittu-banner-card").classList.add("flip");
-    }
-
-    if (!isBuyNow) {
-      document.querySelector(".gittu-banner-card").classList.remove("flip");
-    }
-  }, [isBuyNow]);
   return (
-    
-
     <BannerWrapper>
       <div className="container2 flex flex-col items-center justify-center min-h-screen mx-auto">
         <div className="gittu-banner-right rounded-2xl py-14 pt-16 relative  ">
           <div className="overlay">
-            <a href="#" className="presale-live-btn">
+            <a href="https://stayx.net/" className="presale-live-btn">
               <img src={PresaleLiveTextIcon} alt="Presale live" />
               <span className="icon ">
                 <FiArrowDownRight />
@@ -109,8 +90,8 @@ const CardComponent = () => {
                       </h5>
                     </div>
                   </div> */}
-                  <div className="mb-5 !text-center flex items-center justify-center">
-                    <h2 className="!text-xl text-white !font-[400]  text-center">
+                  <div className="mb-7 !text-center flex items-center justify-center">
+                    <h2 className="!text-xl text-white !font-[400]  text-center uppercase">
                       LOCK YOUR STAYX at PRESALE PRICING
                     </h2>
                   </div>
@@ -130,7 +111,7 @@ const CardComponent = () => {
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="0.5"
+                        placeholder="0"
                       />
                     </div>
                   </div>
@@ -157,7 +138,7 @@ const CardComponent = () => {
                     </div>
                   </div>
 
-                  <div className="my-4 !text-base text-white/90">
+                  <div className="my-4 mb-5 !text-base text-white/90">
                     <h4>Limited: Launch-Day Bonus — At Market Open</h4>
                   </div>
 
@@ -169,7 +150,10 @@ const CardComponent = () => {
                     </li>
                     <li>
                       <p>Total Amount</p>
-                      <p>{getAmount ? getAmount.toFixed(0) : "0"} + {bonusAmount ? bonusAmount.toFixed(0) : "0"} Bonus</p>
+                      <p>
+                        {getAmount ? getAmount.toFixed(0) : "0"} +{" "}
+                        {bonusAmount ? bonusAmount.toFixed(0) : "0"} Bonus
+                      </p>
                     </li>
                   </ul>
 
@@ -181,13 +165,14 @@ const CardComponent = () => {
                       </div>
                     )}
                   </div> */}
-                  {/* onClick={buyToken} */}
-                  <CoinList coins={coins.slice(3)} />
-                  <Button size="large">Buy Now</Button>
+
+                  <Button onClick={buyToken} size="large">
+                    Buy Now
+                  </Button>
                 </div>
               ) : (
                 <div className="card-content">
-                  <div className="flex flex-col items-center justify-center mb-4 mt-4">
+                  <div className="flex flex-col items-center justify-center mb-3">
                     <h1 className="!text-2xl sm:!text-4xl font-semibold text-white !mb-2">
                       $1,250,000
                     </h1>
@@ -221,7 +206,7 @@ const CardComponent = () => {
                     <TokenInfo />
                   </div>
 
-                  <CoinList coins={coins.slice(0, 3)} />
+                  <CoinList coins={coins} selected={selected} />
 
                   <button
                     onClick={buyNowHandle}

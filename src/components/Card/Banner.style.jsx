@@ -219,7 +219,7 @@ const BannerWrapper = styled.section`
 
   .presale-back-btn {
     padding-left: 60px;
-    margin-bottom: 10px;
+    margin-bottom: 25px;
     border: 0;
     background: transparent;
     color: ${({ theme }) => theme.colors.white};
@@ -234,7 +234,7 @@ const BannerWrapper = styled.section`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 22px;
+    gap: 28px;
 
     &.start {
       align-items: flex-start;

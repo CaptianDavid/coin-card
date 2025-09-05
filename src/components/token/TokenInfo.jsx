@@ -3,10 +3,10 @@ import TokenInfoWrapper from "./TokenInfo.style";
 const TokenInfo = ({ variant }) => {
   return (
     <TokenInfoWrapper variant={variant}>
-      <li>
+      {/* <li>
         <p>Token Name</p>
         <h6>StayX</h6>
-      </li>
+      </li> */}
       <li>
         <p>Token Symbol</p>
         <h6>STAYX</h6>

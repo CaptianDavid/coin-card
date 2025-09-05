@@ -14,11 +14,14 @@ const TokenInfoWrapper = styled.ul`
     padding-bottom: 11px;
     border-bottom: 1px solid ${({ theme }) => theme.colors.white}1a;
   }
-
+  li h6 {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  }
   li p,
   li h6 {
-    font-weight: 600;
-    font-size: 16px;
+    font-weight: 500;
+    font-size: 17px;
     line-height: 30px;
     color: ${({ theme }) => theme.colors.white};
   }

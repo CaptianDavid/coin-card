@@ -6,11 +6,15 @@ import { ThemeProvider } from "styled-components";
 import ThemeStyles from "./assets/styles/ThemeStyles.jsx";
 import GlobalStyles from "./assets/styles/GlobalStyles.jsx";
 
+import Rainbowkit from "./RainbowKit.jsx";
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ThemeProvider theme={ThemeStyles}>
-      <GlobalStyles />
-      <App />
-    </ThemeProvider>
+    <Rainbowkit>
+      <ThemeProvider theme={ThemeStyles}>
+        <GlobalStyles />
+        <App />
+      </ThemeProvider>
+    </Rainbowkit>
   </StrictMode>
 );
