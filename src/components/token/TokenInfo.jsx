@@ -21,7 +21,10 @@ const TokenInfo = ({ variant }) => {
       </li>
 
       <li>
-        <p>STAYX Stablecoin Conversion Point</p>
+        <span className="inline-flex items-center gap-1 text-white ">
+          <p className="hidden md:block">STAYX </p> <p className="pTag ">Stablecoin Conversion Point</p>
+        </span>
+
         <h6> $10</h6>
       </li>
     </TokenInfoWrapper>

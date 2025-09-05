@@ -18,6 +18,7 @@ const TokenInfoWrapper = styled.ul`
   font-size: 20px !important;
   font-weight: 600 !important;
   }
+  li span,
   li p,
   li h6 {
     font-weight: 500;
@@ -25,7 +26,27 @@ const TokenInfoWrapper = styled.ul`
     line-height: 30px;
     color: ${({ theme }) => theme.colors.white};
   }
+  
 
+  @media screen and (max-width: 480px) {
+   li h6{
+   font-size: 17px !important;
+   }
+   li span,
+   li p {
+   font-size: 16px !important;
+   }
+  }
+  @media screen and (max-width: 370px) {
+   .pTag {
+   max-width: 10rem;
+   }
+  }
+  @media screen and (max-width: 300px) {
+   .pTag {
+   max-width: 8rem;
+   }
+  }
   ${({ variant }) =>
     variant === "v2" &&
     css`

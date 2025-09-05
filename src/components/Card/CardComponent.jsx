@@ -138,8 +138,8 @@ const CardComponent = () => {
                     </div>
                   </div>
 
-                  <div className="my-4 mb-5 !text-base text-white/90">
-                    <h4>Limited: Launch-Day Bonus — At Market Open</h4>
+                  <div className="my-4 mb-5 !text-sm sm:!text-base text-white/90">
+                    <h4>Limited: Launch-Day Bonus —10%</h4>
                   </div>
 
                   <ul className="token-info-list mb-30">
