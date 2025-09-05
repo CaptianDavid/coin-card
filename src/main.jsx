@@ -5,16 +5,15 @@ import App from "./App.jsx";
 import { ThemeProvider } from "styled-components";
 import ThemeStyles from "./assets/styles/ThemeStyles.jsx";
 import GlobalStyles from "./assets/styles/GlobalStyles.jsx";
-import RainbowKit from "./RainbowKit.jsx";
-
+import CustomRainbowKit from "./components/CustomRainbowKit.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RainbowKit>
+    <CustomRainbowKit>
       <ThemeProvider theme={ThemeStyles}>
         <GlobalStyles />
         <App />
       </ThemeProvider>
-    </RainbowKit>
+    </CustomRainbowKit>
   </StrictMode>
 );
