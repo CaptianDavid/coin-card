@@ -58,7 +58,7 @@ const config = getDefaultConfig({
 });
 const queryClient = new QueryClient();
 
-const Rainbowkit = ({ children }) => {
+const RainbowKit = ({ children }) => {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
@@ -80,4 +80,4 @@ const Rainbowkit = ({ children }) => {
   );
 };
 
-export default Rainbowkit;
+export default RainbowKit;
