@@ -13,26 +13,37 @@ import TokenInfo from "../token/TokenInfo";
 import CoinList from "../CoinList";
 import SelectDropdown from "../select/SelectDropdown";
 import CopyIframeButton from "../CopyIframeButton";
+import { coins } from "../../helpers";
+
+const BONUS_PERCENT = 10;
+const STAYX_PRESALE_PRICE = 0.001;
 
 const CardComponent = () => {
-  const [currentStage, setCurrentStage] = useState(1);
-  const [currentBonus, setCurrentBonus] = useState(0);
-  const [currentPrice, setCurrentPrice] = useState(0);
-  const [tokenPercent, setTokenPercent] = useState(40);
-  const [raisedToken, setRaisedToken] = useState(0);
-  const [goalToken, setGoalToken] = useState(0);
-  const [paymentAmount, setPaymentAmount] = useState(0);
-  const [paymentUsd, setPaymentUsd] = useState(0);
-  const [buyAmount, setBuyAmount] = useState(0);
-  const [bonusAmount, setBonusAmount] = useState(0);
-  const [presaleStatus, setPresaleStatus] = useState("");
   const [stageEnd, setStageEnd] = useState(1759284000);
-  const [tokenSymbol, setTokenSymbol] = useState("");
+
+  const [selected, setSelected] = useState(
+    coins.find((c) => c.symbol === "BNB")
+  );
+  const [amount, setAmount] = useState("");
+  const [prices, setPrices] = useState({});
   const [isBuyNow, setIsBuyNow] = useState(false);
 
-  const handlePaymentInput = (e) => {
-    setPaymentAmount(e.target.value);
-  };
+  useEffect(() => {
+    const ids = coins.map((t) => t.id).join(",");
+    fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`
+    )
+      .then((res) => res.json())
+      .then(setPrices)
+      .catch(console.error);
+  }, []);
+
+  const priceUsd = prices[selected.id]?.usd || 0;
+  const valueUsd = amount ? amount * priceUsd : ""; // ✅ empty if no input
+  
+  const getAmount = valueUsd ? valueUsd / STAYX_PRESALE_PRICE : 0;
+  const bonusAmount = getAmount * (BONUS_PERCENT / 100); 
+  
 
   const buyNowHandle = () => {
     setIsBuyNow(!isBuyNow);
@@ -47,15 +58,15 @@ const CardComponent = () => {
     }
   }, [isBuyNow]);
   return (
-    // <div className="flex flex-col items-center justify-center bg-black min-h-screen ">
+    
 
     <BannerWrapper>
-      <div className="container2 flex flex-col items-center justify-center min-h-screen ">
+      <div className="container2 flex flex-col items-center justify-center min-h-screen mx-auto">
         <div className="gittu-banner-right rounded-2xl py-14 pt-16 relative  ">
           <div className="overlay">
             <a href="#" className="presale-live-btn">
               <img src={PresaleLiveTextIcon} alt="Presale live" />
-              <span className="icon">
+              <span className="icon ">
                 <FiArrowDownRight />
               </span>
             </a>
@@ -73,41 +84,53 @@ const CardComponent = () => {
 
               {isBuyNow ? (
                 <div className="card-content">
-                  <button className="presale-back-btn" onClick={buyNowHandle}>
+                  <button
+                    className="presale-back-btn cursor-pointer"
+                    onClick={buyNowHandle}
+                  >
                     <HiArrowLeft />
                   </button>
 
-                  <div className="presale-item start mb-5">
+                  {/* <div className="presale-item start mb-5 flex flex-col">
+                    <div>
+                      <h2 className="!text-xl">LOCK YOUR STAYX at PRESALE PRICING</h2>
+                    </div>
                     <div className="presale-item-inner">
                       <h5 className="font-semibold uppercase text-white">
-                        {/* Balance: {userBalance} */}
+                        Balance: {userBalance}
                         Balance: 0
                       </h5>
                     </div>
                     <div className="presale-item-inner">
                       <h5 className="font-semibold uppercase text-white">
-                        {/* Balance: {userTokenBalance.toLocaleString("en-US")}{" "}
-                        {tokenSymbol} */}
+                        Balance: {userTokenBalance.toLocaleString("en-US")}{" "}
+                        {tokenSymbol}
                         Balance : 0 StayX
                       </h5>
                     </div>
+                  </div> */}
+                  <div className="mb-5 !text-center flex items-center justify-center">
+                    <h2 className="!text-xl text-white !font-[400]  text-center">
+                      LOCK YOUR STAYX at PRESALE PRICING
+                    </h2>
                   </div>
 
                   <div className="presale-item mb-7">
                     <div className="presale-item-inner">
                       <h6>Select Token</h6>
-                      <SelectDropdown />
+                      <SelectDropdown
+                        value={selected}
+                        onChange={(coin) => setSelected(coin)}
+                      />
                     </div>
                     <div className="presale-item-inner">
                       <h6>Amount</h6>
 
                       <input
                         type="number"
-                        // min={currentPrice}
-                        // step={currentPrice}
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
                         placeholder="0.5"
-                        // value={paymentAmount}
-                        // onChange={handlePaymentInput}
                       />
                     </div>
                   </div>
@@ -119,86 +142,108 @@ const CardComponent = () => {
                       <input
                         type="text"
                         placeholder="0"
-                        // value={paymentUsd}
+                        value={valueUsd ? valueUsd.toFixed(2) : ""}
                         disabled
                       />
                     </div>
                     <div className="presale-item-inner">
-                      {/* <h6>Get Amount ( {tokenSymbol} )</h6> */}
-                      <h6>Get Amount </h6>
+                      <h6>Get Amount (STAYX) </h6>
                       <input
                         type="text"
                         placeholder="0"
-                        value={buyAmount}
+                        value={getAmount ? getAmount.toFixed(0) : ""}
                         disabled
                       />
                     </div>
                   </div>
 
+                  <div className="my-4 !text-base text-white/90">
+                    <h4>Limited: Launch-Day Bonus — At Market Open</h4>
+                  </div>
+
                   <ul className="token-info-list mb-30">
                     <li>
                       <p>Bonus</p>
-                      {/* <p>{currentBonus}%</p> */}
-                      <p>5%</p>
+
+                      <p>10%</p>
                     </li>
                     <li>
                       <p>Total Amount</p>
-                      <p>
-                        {/* {buyAmount} + {bonusAmount} Bonus */}0 + 0 Bonus
-                      </p>
+                      <p>{getAmount ? getAmount.toFixed(0) : "0"} + {bonusAmount ? bonusAmount.toFixed(0) : "0"} Bonus</p>
                     </li>
                   </ul>
 
-                  <div className="presale-item-msg">
+                  {/* <div className="presale-item-msg">
                     {presaleStatus && (
                       <div className="presale-item-msg__content">
                         <img src={StatusIcon} alt="icon" />
                         <p>{presaleStatus}</p>
                       </div>
                     )}
-                  </div>
+                  </div> */}
                   {/* onClick={buyToken} */}
+                  <CoinList coins={coins.slice(3)} />
                   <Button size="large">Buy Now</Button>
                 </div>
               ) : (
                 <div className="card-content">
-                  <p className="presale-stage-title uppercase">
-                    {/* Stage {currentStage}: {currentBonus}% Bonus! */}
-                    Stage
-                  </p>
-                  <h5 className="font-semibold text-white uppercase">
-                    Total Pre-Sale Funding: $1,500,000
-                  </h5>
+                  <div className="flex flex-col items-center justify-center mb-4 mt-4">
+                    <h1 className="!text-2xl sm:!text-4xl font-semibold text-white !mb-2">
+                      $1,250,000
+                    </h1>
+                    <h5 className="!text-xl text-white !font-[400] uppercase ">
+                      Pre-Sale Funding
+                    </h5>
+                  </div>
 
-                  <div className="mt-1 mb-5">
+                  <div className="mt-1 mb-5 flex items-center justify-center">
                     <Countdown endDate={stageEnd} />
                   </div>
 
-                  <div className="mb-5">
-                    <Progressbar done={tokenPercent} />
-                  </div>
+                  {/* progess bar: you can uncomment this if you want to show the progress bar */}
 
-                  <div className="presale-raised font-medium mb-7">
+                  {/* <div className="mb-5">
+                    <Progressbar done={tokenPercent} />
+                  </div> */}
+
+                  {/* <div className="presale-raised font-medium mb-7">
                     <p className="text-[15px] text-white">
-                      {/* Raised: {raisedToken.toLocaleString("en-US")} */}
+                      Raised: {raisedToken.toLocaleString("en-US")}
                       Raised: 1,042,812
                     </p>
                     <p className="text-[15px] text-white">
-                      {/* Goal: {goalToken.toLocaleString("en-US")} */}
+                      Goal: {goalToken.toLocaleString("en-US")}
                       Goal: 200,000,000
                     </p>
-                  </div>
+                  </div> */}
 
                   <div className="mb-8">
                     <TokenInfo />
                   </div>
 
-                  <CoinList />
+                  <CoinList coins={coins.slice(0, 3)} />
 
-                  <Button size="large" onClick={buyNowHandle}>
-                    {/* Buy {tokenSymbol} now */}
-                    BUY $STAYX TODAY
-                  </Button>
+                  <button
+                    onClick={buyNowHandle}
+                    className="
+    w-full
+    bg-[#1EE8B7]
+    text-[#0e1117]
+    font-outfit font-bold
+    text-[16px] leading-[24px]
+    uppercase
+    px-8 py-4
+    rounded-full
+    shadow-lg
+    hover:bg-[#19c9a0]
+    hover:shadow-xl
+    active:scale-95
+    transition-all duration-300
+    flex items-center justify-center gap-2 cursor-pointer
+  "
+                  >
+                    Buy now
+                  </button>
                 </div>
               )}
             </div>

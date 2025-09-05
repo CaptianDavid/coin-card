@@ -21,7 +21,7 @@ const TokenInfo = ({ variant }) => {
       </li>
 
       <li>
-        <p>Stable Coin Target</p>
+        <p>STAYX Stablecoin Conversion Point</p>
         <h6> $10</h6>
       </li>
     </TokenInfoWrapper>

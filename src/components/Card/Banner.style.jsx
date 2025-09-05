@@ -211,7 +211,7 @@ const BannerWrapper = styled.section`
 
     li p {
       font-weight: 500;
-      font-size: 15px;
+      font-size: 16px;
       line-height: 30px;
       color: ${({ theme }) => theme.colors.white};
     }
@@ -219,7 +219,7 @@ const BannerWrapper = styled.section`
 
   .presale-back-btn {
     padding-left: 60px;
-    margin-bottom: 23px;
+    margin-bottom: 10px;
     border: 0;
     background: transparent;
     color: ${({ theme }) => theme.colors.white};
@@ -234,7 +234,7 @@ const BannerWrapper = styled.section`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 30px;
+    gap: 22px;
 
     &.start {
       align-items: flex-start;
@@ -258,9 +258,10 @@ const BannerWrapper = styled.section`
     input {
       width: 100%;
       padding: 16px;
-      background: ${({ theme }) => theme.colors.white}0d;
-      border: 2px solid ${({ theme }) => theme.colors.white}1a;
-      border-radius: 10px;
+       box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      background: #1e2939;
+      border: 1px solid ${({ theme }) => theme.colors.white}1a;
+      border-radius: 12px;
       font-weight: 600;
       font-size: 18px;
       line-height: 18px;
@@ -382,6 +383,7 @@ const BannerWrapper = styled.section`
         width: 90px;
         height: 90px;
         padding: 10px;
+        
       }
     }
 
