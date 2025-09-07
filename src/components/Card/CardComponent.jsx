@@ -17,15 +17,7 @@ import { coins } from "../../helpers";
 import useCardHook from "./useCardHook";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 
-const CardComponent = ({ 
-  parentConfig, 
-  isReady, 
-  onQuoteUpdate, 
-  onTxStart, 
-  onTxConfirm, 
-  onTxFail, 
-  onError 
-}) => {
+const CardComponent = () => {
   const { openConnectModal } = useConnectModal();
   const {
     stageEnd,
@@ -36,31 +28,21 @@ const CardComponent = ({
     setAmount,
     getAmount,
     bonusAmount,
-    isTransactionPending,
+
     buyNowHandle,
-    requestTransaction,
-    handleTransactionUpdate,
     valueUsd,
-  } = useCardHook(parentConfig, onQuoteUpdate, onTxStart, onTxConfirm, onTxFail, onError);
+  } = useCardHook();
 
-  const buyToken = async () => {
-    try {
-      // Check if we have required data
-      if (!amount || !selected) {
-        onError?.({ error: "Please enter amount and select token", code: "INVALID_INPUT" });
-        return;
-      }
-
-      // Request transaction from parent (parent handles wallet connection and execution)
-      requestTransaction();
-      
-    } catch (error) {
-      console.error("Buy token error:", error);
-      onError?.({ error: error.message || "Failed to initiate transaction", code: "BUY_ERROR" });
+  const buyToken = () => {
+    if (!openConnectModal) {
+      console.error("Connect modal not available");
+      return;
     }
+    openConnectModal(); // this opens the wallet modal
   };
   return (
     <BannerWrapper>
+      <div className="container2 flex flex-col items-center justify-center min-h-screen mx-auto">
         <div className="gittu-banner-right rounded-2xl py-14 pt-16 relative  ">
           <div className="overlay">
             <a href="https://stayx.net/" className="presale-live-btn">
@@ -184,12 +166,8 @@ const CardComponent = ({
                     )}
                   </div> */}
 
-                  <Button 
-                    onClick={buyToken} 
-                    size="large"
-                    disabled={isTransactionPending || !amount || !selected}
-                  >
-                    {isTransactionPending ? "Processing..." : "Buy Now"}
+                  <Button onClick={buyToken} size="large">
+                    Buy Now
                   </Button>
                 </div>
               ) : (
@@ -247,18 +225,20 @@ const CardComponent = ({
     active:scale-95
     transition-all duration-300
     flex items-center justify-center gap-2 cursor-pointer
-    disabled:opacity-50 disabled:cursor-not-allowed
   "
-                    disabled={isTransactionPending}
                   >
-                    {isTransactionPending ? "Processing..." : "Buy now"}
+                    Buy now
                   </button>
                 </div>
               )}
             </div>
           </div>
         </div>
+      </div>
+
+      <CopyIframeButton />
     </BannerWrapper>
+    // </div>
   );
 };
 
