@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { FiArrowDownRight } from "react-icons/fi";
 import { HiArrowLeft } from "react-icons/hi2";
+import { MdLogout } from "react-icons/md";
 import PresaleLiveTextIcon from "../../assets/icons/presale-live-text.svg";
 
 import Abstrac1 from "../../assets/abstrac-1.png";
@@ -15,10 +17,20 @@ import SelectDropdown from "../select/SelectDropdown";
 import CopyIframeButton from "../CopyIframeButton";
 import { coins } from "../../helpers";
 import useCardHook from "./useCardHook";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { useAccount, useConnect, useChainId, useDisconnect } from "wagmi";
 
 const CardComponent = () => {
-  const { openConnectModal } = useConnectModal();
+  const { isConnected, address, chain, chainId: chain_id } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
+  const chainId = useChainId();
+  
+  // Debug: Log what useAccount returns
+  console.log('=== CARD COMPONENT DEBUG ===');
+  console.log('useAccount result:', { isConnected, address, chain });
+  console.log('useChainId result:', chainId);
+  console.log('useChainId result 2:', chain_id);
+  console.log('============================');
   const {
     stageEnd,
     selected,
@@ -28,17 +40,164 @@ const CardComponent = () => {
     setAmount,
     getAmount,
     bonusAmount,
-
     buyNowHandle,
     valueUsd,
-  } = useCardHook();
+    buyToken,
+    userBalance,
+    setUserBalance,
+  } = useCardHook(chainId);
 
-  const buyToken = () => {
-    if (!openConnectModal) {
-      console.error("Connect modal not available");
-      return;
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+
+  // Function to parse and format error messages
+  const parseError = (error) => {
+    const errorMessage = error?.message || error?.toString() || "Unknown error";
+    
+    // Common error patterns and their user-friendly messages
+    const errorPatterns = [
+      {
+        pattern: /user rejected/i,
+        message: "Transaction was cancelled by user"
+      },
+      {
+        pattern: /insufficient funds/i,
+        message: "Insufficient balance for this transaction"
+      },
+      {
+        pattern: /gas required exceeds allowance/i,
+        message: "Transaction requires more gas. Try increasing gas limit."
+      },
+      {
+        pattern: /network error/i,
+        message: "Network connection error. Please check your internet connection."
+      },
+      {
+        pattern: /invalid BigNumberish/i,
+        message: "Invalid amount format. Please enter a valid number."
+      },
+      {
+        pattern: /execution reverted/i,
+        message: "Transaction failed. The contract rejected the transaction."
+      },
+      {
+        pattern: /nonce too low/i,
+        message: "Transaction nonce error. Please try again."
+      },
+      {
+        pattern: /already known/i,
+        message: "Transaction already submitted. Please wait for confirmation."
+      },
+      {
+        pattern: /replacement transaction underpriced/i,
+        message: "Transaction fee too low. Please try again."
+      },
+      {
+        pattern: /intrinsic gas too low/i,
+        message: "Gas limit too low. Please try again."
+      },
+      {
+        pattern: /allowance/i,
+        message: "Token approval required. Please approve the transaction first."
+      },
+      {
+        pattern: /enter amount/i,
+        message: "Please enter a valid amount"
+      },
+      {
+        pattern: /minimum transaction amount/i,
+        message: "Minimum transaction amount is $10"
+      },
+      {
+        pattern: /no provider/i,
+        message: "Wallet not connected. Please connect your wallet first."
+      },
+      {
+        pattern: /unsupported chain/i,
+        message: "Unsupported blockchain network. Please switch to a supported network."
+      },
+      {
+        pattern: /contract not deployed/i,
+        message: "Smart contract not found. Please check the network."
+      },
+      {
+        pattern: /missing revert data/i,
+        message: "Transaction failed. The contract rejected the transaction or insufficient gas."
+      },
+      {
+        pattern: /call_exception/i,
+        message: "Contract call failed. Please check your token balance and try again."
+      }
+    ];
+
+    // Find matching pattern
+    for (const pattern of errorPatterns) {
+      if (pattern.pattern.test(errorMessage)) {
+        return pattern.message;
+      }
     }
-    openConnectModal(); // this opens the wallet modal
+
+    // If no pattern matches, return a truncated version of the original error
+    if (errorMessage.length > 100) {
+      return errorMessage.substring(0, 100) + "...";
+    }
+    
+    return errorMessage;
+  };
+
+  // Auto-clear success messages after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
+  const handleBuyToken = async () => {
+    try {
+      setError(""); // Clear any previous errors
+      setSuccess(""); // Clear any previous success messages
+      setIsLoading(true);
+      
+      if (!isConnected) {
+        // If wallet is not connected, connect with the first available connector
+        if (connectors.length > 0) {
+          await connect({ connector: connectors[0] });
+        } else {
+          setError("No wallet connectors available");
+          return;
+        }
+      } else {
+        // If wallet is connected, check if amount is entered and meets minimum
+        if (!amount || Number(amount) <= 0) {
+          setError("Please enter a valid amount");
+          return;
+        }
+        if (Number(valueUsd) < 10) {
+          setError("Minimum transaction amount is $10");
+          return;
+        }
+        // Execute the transaction with success callback
+        const result = await buyToken((txResult) => {
+          setSuccess("🎉 Transaction successful! Your STAYX tokens have been purchased and added to your wallet.");
+        });
+        console.log("result trx", result);
+      }
+    } catch (error) {
+      console.error("Error in buy token flow:", error);
+      setError(parseError(error));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+    setError("");
+    setSuccess("");
   };
   return (
     <BannerWrapper>
@@ -52,6 +211,23 @@ const CardComponent = () => {
               </span>
             </a>
           </div>
+          {/* Wallet Address & Disconnect - Outside flip area */}
+          {/* {isConnected && address && (
+            <div className="wallet-info absolute top-4 right-4 z-10 flex items-center gap-2">
+              <span className="text-white/70 text-xs">
+                {address.slice(0, 6)}...{address.slice(-4)}
+              </span>
+              <button
+                onClick={handleDisconnect}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                title="Disconnect Wallet"
+              >
+                <MdLogout size={12} />
+                Disconnect Wallet
+              </button>
+            </div>
+          )} */}
+
           <div className="gittu-banner-card ">
             <div className="gittu-banner-card-inner">
               <div className="bg-shape">
@@ -112,6 +288,7 @@ const CardComponent = () => {
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         placeholder="0"
+                        step="0.01"
                       />
                     </div>
                   </div>
@@ -157,6 +334,63 @@ const CardComponent = () => {
                     </li>
                   </ul>
 
+                  {/* Error Display */}
+                  {error && (
+                    <div className="error-message mb-4 p-4 rounded-lg bg-red-500/20 border border-red-500/30 backdrop-blur-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-500/30 flex items-center justify-center mt-0.5">
+                          <span className="text-red-400 text-xs">!</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-red-400 text-sm font-medium mb-1">Transaction Failed</p>
+                          <p className="text-red-300 text-sm leading-relaxed">{error}</p>
+                        </div>
+                        <button 
+                          onClick={() => setError("")}
+                          className="flex-shrink-0 text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          <span className="text-lg">&times;</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Success Display */}
+                  {success && (
+                    <div className="success-message mb-4 p-4 rounded-lg bg-green-500/20 border border-green-500/30 backdrop-blur-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500/30 flex items-center justify-center mt-0.5">
+                          <span className="text-green-400 text-xs">✓</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-green-400 text-sm font-medium mb-1">Success!</p>
+                          <p className="text-green-300 text-sm leading-relaxed">{success}</p>
+                        </div>
+                        <button 
+                          onClick={() => setSuccess("")}
+                          className="flex-shrink-0 text-green-400 hover:text-green-300 transition-colors"
+                        >
+                          <span className="text-lg">&times;</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Loading Display */}
+                  {isLoading && (
+                    <div className="loading-message mb-4 p-4 rounded-lg bg-blue-500/20 border border-blue-500/30 backdrop-blur-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500/30 flex items-center justify-center">
+                          <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-blue-400 text-sm font-medium">Processing Transaction...</p>
+                          <p className="text-blue-300 text-xs">Please wait while we process your request</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* <div className="presale-item-msg">
                     {presaleStatus && (
                       <div className="presale-item-msg__content">
@@ -166,8 +400,20 @@ const CardComponent = () => {
                     )}
                   </div> */}
 
-                  <Button onClick={buyToken} size="large">
-                    Buy Now
+                  <Button 
+                    onClick={handleBuyToken} 
+                    size="large"
+                    disabled={isLoading}
+                    className={isLoading ? "opacity-50 cursor-not-allowed" : ""}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      isConnected ? "Buy Now" : "Connect Wallet"
+                    )}
                   </Button>
                 </div>
               ) : (
@@ -227,7 +473,7 @@ const CardComponent = () => {
     flex items-center justify-center gap-2 cursor-pointer
   "
                   >
-                    Buy now
+                    {isConnected ? "Buy now" : "Connect & Buy"}
                   </button>
                 </div>
               )}

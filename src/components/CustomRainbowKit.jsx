@@ -7,7 +7,7 @@ import {
 } from "@rainbow-me/rainbowkit";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { sepolia, bscTestnet } from "wagmi/chains";
+import { mainnet, bsc, polygon, avalanche } from "wagmi/chains";
 import {
   argentWallet,
   coinbaseWallet,
@@ -45,15 +45,15 @@ const connectors = connectorsForWallets(
     },
   ],
   {
-    appName: "My RainbowKit App",
+    appName: "StayX Presale",
     projectId: projectId,
   }
 );
 
 const config = getDefaultConfig({
-  appName: "My RainbowKit App",
+  appName: "StayX Presale",
   projectId: projectId,
-  chains: [sepolia, bscTestnet],
+  chains: [mainnet, bsc, polygon, avalanche],
   connectors,
 });
 const queryClient = new QueryClient();
@@ -63,7 +63,7 @@ const CustomRainbowKit = ({ children }) => {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
-          initialChain={sepolia}
+          initialChain={bsc}
           modalSize="compact" //wide,compact
           theme={darkTheme({
             accentColor: "rgba(255, 255, 255, 0.2)",
