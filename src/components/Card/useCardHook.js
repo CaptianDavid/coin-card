@@ -10,6 +10,7 @@ const useCardHook = (chainId) => {
   const {
     selectedChainId,
     selectedPayAssetKey,
+    setSelectedPayAssetKey,
     paymentAmount,
     handlePaymentInput,
     quoteUsd,
@@ -27,6 +28,38 @@ const useCardHook = (chainId) => {
   const [amount, setAmount] = useState("");
   const [prices, setPrices] = useState({});
   const [isBuyNow, setIsBuyNow] = useState(false);
+
+  // Function to map token symbol to payAssetKey
+  const getPayAssetKey = (tokenSymbol) => {
+    switch (tokenSymbol) {
+      case 'BNB':
+      case 'ETH':
+      case 'MATIC':
+      case 'AVAX':
+        return 'NATIVE';
+      case 'USDT':
+        return 'USDT';
+      case 'USDC':
+        return 'USDC';
+      default:
+        return 'NATIVE';
+    }
+  };
+
+  // Update payAssetKey when selected token changes
+  useEffect(() => {
+    const payAssetKey = getPayAssetKey(selected.symbol);
+    console.log('=== TOKEN SELECTION DEBUG ===');
+    console.log('Selected token:', selected.symbol);
+    console.log('Mapped payAssetKey:', payAssetKey);
+    console.log('Current selectedPayAssetKey:', selectedPayAssetKey);
+    console.log('=============================');
+    
+    if (payAssetKey !== selectedPayAssetKey) {
+      console.log('Updating payAssetKey from', selectedPayAssetKey, 'to', payAssetKey);
+      setSelectedPayAssetKey(payAssetKey);
+    }
+  }, [selected.symbol, selectedPayAssetKey, setSelectedPayAssetKey]);
 
   useEffect(() => {
     const ids = coins.map((t) => t.id).join(",");
@@ -91,6 +124,7 @@ const useCardHook = (chainId) => {
       console.log('Selected token:', selected);
       console.log('PriceUsd:', priceUsd);
       console.log('ChainId passed to hook:', chainId);
+      console.log('SelectedPayAssetKey:', selectedPayAssetKey);
       console.log('========================');
       
       // Execute the transaction with the amount and current chainId
