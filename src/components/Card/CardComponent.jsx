@@ -51,6 +51,11 @@ const CardComponent = () => {
       Chain ID: ${chainId}
       localStorage: ${localStorage.getItem('walletConnected')}
       localStorage Address: ${localStorage.getItem('walletAddress') ? localStorage.getItem('walletAddress').slice(0, 6) + '...' + localStorage.getItem('walletAddress').slice(-4) : 'None'}
+      
+      === PRESALE CONTEXT DEBUG ===
+      Provider exists: ${!!window.ethereum}
+      User agent: ${navigator.userAgent}
+      =============================
     `;
     setDebugInfo(debug);
   };

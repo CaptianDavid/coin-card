@@ -149,11 +149,12 @@ export default function PresaleContextProvider({ children }) {
       const savedAddress = localStorage.getItem('walletAddress');
       console.log('Mobile localStorage check:', { savedConnection, savedAddress });
       
-      if (savedConnection !== 'true' || !savedAddress) {
-        console.log('❌ Mobile connection failed - localStorage check');
+      // For mobile, just check if we have a user address from signer
+      if (!user) {
+        console.log('❌ Mobile connection failed - no user from signer');
         throw new Error('Wallet not connected. Please connect your wallet first.');
       }
-      console.log('✅ Mobile connection verified:', { savedConnection, savedAddress });
+      console.log('✅ Mobile connection verified - user exists:', user);
     } else {
       // For desktop, check if wagmi says connected
       console.log('Desktop connection check:', { isConnected, address });
