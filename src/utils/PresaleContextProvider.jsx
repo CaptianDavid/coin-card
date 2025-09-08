@@ -6,7 +6,7 @@ import React, {
   useEffect,
 } from 'react';
 import { ethers } from 'ethers';
-import { useAccount, useChainId } from 'wagmi';
+import { useAccount, useChainId, useWalletClient } from 'wagmi';
 import { CHAINS } from '../contracts/chainConfig';
 import { TOKENS } from '../contracts/tokens';
 import { buy as buyService } from './purchase';
@@ -16,6 +16,7 @@ import PresaleContext from './PresaleContext';
 export default function PresaleContextProvider({ children }) {
   const { chain, isConnected, address } = useAccount();
   const chainId = useChainId();
+  const { data: walletClient } = useWalletClient();
   const [selectedChainId, setSelectedChainId] = useState(chainId || 56); // Use current chain or default to BNB
   const [selectedPayAssetKey, setSelectedPayAssetKey] = useState('NATIVE');
   const [amountHuman, setAmountHuman] = useState('');
@@ -51,13 +52,22 @@ export default function PresaleContextProvider({ children }) {
   const makeEmptyInputs = () => ({ token: '', amount: '' });
   const [userBalance, setUserBalance] = useState('0');
 
-  const provider = useMemo(
-    () =>
-      typeof window !== 'undefined' && window.ethereum
-        ? new ethers.BrowserProvider(window.ethereum)
-        : null,
-    [selectedChainId]
-  );
+  const provider = useMemo(() => {
+    // Try wagmi walletClient first (works better on mobile)
+    if (walletClient) {
+      console.log('Using wagmi walletClient for provider');
+      return new ethers.BrowserProvider(walletClient);
+    }
+    
+    // Fallback to window.ethereum
+    if (typeof window !== 'undefined' && window.ethereum) {
+      console.log('Using window.ethereum for provider');
+      return new ethers.BrowserProvider(window.ethereum);
+    }
+    
+    console.log('No provider available');
+    return null;
+  }, [walletClient, selectedChainId]);
 
   const presaleAddress = chainMeta?.presale;
 

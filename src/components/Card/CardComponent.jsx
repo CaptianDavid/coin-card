@@ -53,7 +53,7 @@ const CardComponent = () => {
       localStorage Address: ${localStorage.getItem('walletAddress') ? localStorage.getItem('walletAddress').slice(0, 6) + '...' + localStorage.getItem('walletAddress').slice(-4) : 'None'}
       
       === PRESALE CONTEXT DEBUG ===
-      Provider exists: ${!!window.ethereum}
+      window.ethereum: ${!!window.ethereum}
       User agent: ${navigator.userAgent}
       =============================
     `;
@@ -272,7 +272,7 @@ const CardComponent = () => {
         refreshMobileConnection();
         if (!effectiveIsConnected) {
           setError("Wallet connection lost. Please reconnect your wallet.");
-          return;
+      return;
         }
       }
       
@@ -381,11 +381,11 @@ const CardComponent = () => {
             </div>
           )}
 
-          {/* Debug Panel for Mobile */}
+          {/* Debug Panel for Mobile - Moved to bottom */}
           {isMobile && (
-            <div className="debug-panel absolute top-16 left-4 right-4 z-10 bg-black/80 text-white text-xs p-2 rounded border">
+            <div className="debug-panel fixed bottom-20 left-4 right-4 z-10 bg-black/80 text-white text-xs p-2 rounded border max-h-40 overflow-y-auto">
               <div className="font-bold mb-1">Debug Info:</div>
-              <pre className="whitespace-pre-wrap">{debugInfo}</pre>
+              <pre className="whitespace-pre-wrap text-xs">{debugInfo}</pre>
               {lastError && (
                 <div className="mt-2 p-2 bg-red-900/50 rounded">
                   <div className="font-bold text-red-300">Last Error:</div>
