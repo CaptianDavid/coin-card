@@ -25,12 +25,65 @@ const CardComponent = () => {
   const { disconnect } = useDisconnect();
   const chainId = useChainId();
   
+  // Mobile-specific state management
+  const [isMobileConnected, setIsMobileConnected] = useState(false);
+  const [mobileAddress, setMobileAddress] = useState(null);
+  
   // Debug: Log what useAccount returns
   console.log('=== CARD COMPONENT DEBUG ===');
   console.log('useAccount result:', { isConnected, address, chain });
   console.log('useChainId result:', chainId);
   console.log('useChainId result 2:', chain_id);
+  console.log('isMobileConnected:', isMobileConnected);
+  console.log('mobileAddress:', mobileAddress);
   console.log('============================');
+  
+  // Handle mobile wallet connection state
+  useEffect(() => {
+    // Check if we're on mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // On mobile, check for wallet connection in localStorage
+      const savedConnection = localStorage.getItem('walletConnected');
+      const savedAddress = localStorage.getItem('walletAddress');
+      
+      if (savedConnection === 'true' && savedAddress) {
+        setIsMobileConnected(true);
+        setMobileAddress(savedAddress);
+        console.log('Restored mobile connection:', { address: savedAddress });
+      }
+    }
+  }, []);
+  
+  // Update mobile state when wallet connects/disconnects
+  useEffect(() => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      if (isConnected && address) {
+        setIsMobileConnected(true);
+        setMobileAddress(address);
+        localStorage.setItem('walletConnected', 'true');
+        localStorage.setItem('walletAddress', address);
+        console.log('Mobile wallet connected:', address);
+      } else {
+        setIsMobileConnected(false);
+        setMobileAddress(null);
+        localStorage.removeItem('walletConnected');
+        localStorage.removeItem('walletAddress');
+        console.log('Mobile wallet disconnected');
+      }
+    }
+  }, [isConnected, address]);
+  
+  // Use mobile state if on mobile, otherwise use wagmi state
+  const effectiveIsConnected = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+    ? isMobileConnected 
+    : isConnected;
+  const effectiveAddress = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    ? mobileAddress
+    : address;
   const {
     stageEnd,
     selected,
@@ -162,7 +215,7 @@ const CardComponent = () => {
       setSuccess(""); // Clear any previous success messages
       setIsLoading(true);
       
-      if (!isConnected) {
+      if (!effectiveIsConnected) {
         // If wallet is not connected, connect with the first available connector
         if (connectors.length > 0) {
           await connect({ connector: connectors[0] });
@@ -178,7 +231,7 @@ const CardComponent = () => {
         }
         if (Number(valueUsd) < 10) {
           setError("Minimum transaction amount is $10");
-          return;
+      return;
         }
         // Execute the transaction with success callback
         const result = await buyToken((txResult) => {
@@ -212,10 +265,10 @@ const CardComponent = () => {
             </a>
           </div>
           {/* Wallet Address & Disconnect - Outside flip area */}
-          {/* {isConnected && address && (
+          {effectiveIsConnected && effectiveAddress && (
             <div className="wallet-info absolute top-4 right-4 z-10 flex items-center gap-2">
               <span className="text-white/70 text-xs">
-                {address.slice(0, 6)}...{address.slice(-4)}
+                {effectiveAddress.slice(0, 6)}...{effectiveAddress.slice(-4)}
               </span>
               <button
                 onClick={handleDisconnect}
@@ -226,7 +279,7 @@ const CardComponent = () => {
                 Disconnect Wallet
               </button>
             </div>
-          )} */}
+          )}
 
           <div className="gittu-banner-card ">
             <div className="gittu-banner-card-inner">
@@ -412,7 +465,7 @@ const CardComponent = () => {
                         Processing...
                       </div>
                     ) : (
-                      isConnected ? "Buy Now" : "Connect Wallet"
+                      effectiveIsConnected ? "Buy Now" : "Connect Wallet"
                     )}
                   </Button>
                 </div>
@@ -473,7 +526,7 @@ const CardComponent = () => {
     flex items-center justify-center gap-2 cursor-pointer
   "
                   >
-                    {isConnected ? "Buy now" : "Connect & Buy"}
+                    {effectiveIsConnected ? "Buy now" : "Connect & Buy"}
                   </button>
                 </div>
               )}

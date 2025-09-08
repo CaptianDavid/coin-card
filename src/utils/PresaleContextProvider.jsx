@@ -134,6 +134,15 @@ export default function PresaleContextProvider({ children }) {
     // Use override chainId if provided, otherwise use selectedChainId
     const chainIdToUse = overrideChainId || selectedChainId;
 
+    // Mobile-specific: Check if wallet is actually connected
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      const savedConnection = localStorage.getItem('walletConnected');
+      if (savedConnection !== 'true') {
+        throw new Error('Wallet not connected. Please connect your wallet first.');
+      }
+    }
+
     return await buyService({
       provider,
       user,
