@@ -14,7 +14,7 @@ import { getQuote } from './quotes';
 import PresaleContext from './PresaleContext';
 
 export default function PresaleContextProvider({ children }) {
-  const { chain } = useAccount();
+  const { chain, isConnected, address } = useAccount();
   const chainId = useChainId();
   const [selectedChainId, setSelectedChainId] = useState(chainId || 56); // Use current chain or default to BNB
   const [selectedPayAssetKey, setSelectedPayAssetKey] = useState('NATIVE');
@@ -115,6 +115,8 @@ export default function PresaleContextProvider({ children }) {
     console.log('selectedChainId in buyToken:', selectedChainId);
     console.log('chainId from useChainId in buyToken:', chainId);
     console.log('chain from useAccount in buyToken:', chain);
+    console.log('isConnected from useAccount:', isConnected);
+    console.log('address from useAccount:', address);
     console.log('overrideChainId:', overrideChainId);
     console.log('presaleAddress:', presaleAddress);
     console.log('selectedPayAssetKey:', selectedPayAssetKey);
@@ -143,6 +145,11 @@ export default function PresaleContextProvider({ children }) {
         throw new Error('Wallet not connected. Please connect your wallet first.');
       }
       console.log('Mobile connection verified:', { savedConnection, savedAddress });
+    } else {
+      // For desktop, check if wagmi says connected
+      if (!isConnected || !address) {
+        throw new Error('Wallet not connected. Please connect your wallet first.');
+      }
     }
 
     return await buyService({

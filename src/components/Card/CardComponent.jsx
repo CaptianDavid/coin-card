@@ -49,6 +49,8 @@ const CardComponent = () => {
       Effective Connected: ${effectiveIsConnected}
       Effective Address: ${effectiveAddress ? effectiveAddress.slice(0, 6) + '...' + effectiveAddress.slice(-4) : 'None'}
       Chain ID: ${chainId}
+      localStorage: ${localStorage.getItem('walletConnected')}
+      localStorage Address: ${localStorage.getItem('walletAddress') ? localStorage.getItem('walletAddress').slice(0, 6) + '...' + localStorage.getItem('walletAddress').slice(-4) : 'None'}
     `;
     setDebugInfo(debug);
   };
