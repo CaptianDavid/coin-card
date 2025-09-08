@@ -38,16 +38,25 @@ const CardComponent = () => {
   const effectiveIsConnected = isMobile ? mobileConnectionState.isConnected : isConnected;
   const effectiveAddress = isMobile ? mobileConnectionState.address : address;
   
-  // Debug: Log what useAccount returns
-  console.log('=== CARD COMPONENT DEBUG ===');
-  console.log('useAccount result:', { isConnected, address, chain });
-  console.log('useChainId result:', chainId);
-  console.log('useChainId result 2:', chain_id);
-  console.log('isMobile:', isMobile);
-  console.log('mobileConnectionState:', mobileConnectionState);
-  console.log('effectiveIsConnected:', effectiveIsConnected);
-  console.log('effectiveAddress:', effectiveAddress);
-  console.log('============================');
+  // Update debug info for mobile
+  const updateDebugInfo = () => {
+    const debug = `
+      Mobile: ${isMobile}
+      Wagmi Connected: ${isConnected}
+      Wagmi Address: ${address ? address.slice(0, 6) + '...' + address.slice(-4) : 'None'}
+      Mobile Connected: ${mobileConnectionState.isConnected}
+      Mobile Address: ${mobileConnectionState.address ? mobileConnectionState.address.slice(0, 6) + '...' + mobileConnectionState.address.slice(-4) : 'None'}
+      Effective Connected: ${effectiveIsConnected}
+      Effective Address: ${effectiveAddress ? effectiveAddress.slice(0, 6) + '...' + effectiveAddress.slice(-4) : 'None'}
+      Chain ID: ${chainId}
+    `;
+    setDebugInfo(debug);
+  };
+
+  // Update debug info whenever state changes
+  useEffect(() => {
+    updateDebugInfo();
+  }, [isConnected, address, mobileConnectionState, effectiveIsConnected, effectiveAddress, chainId, isMobile]);
   
   // Initialize mobile connection state from localStorage
   useEffect(() => {
@@ -113,6 +122,7 @@ const CardComponent = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState("");
+  const [debugInfo, setDebugInfo] = useState("");
 
   // Function to parse and format error messages
   const parseError = (error) => {
@@ -357,6 +367,20 @@ const CardComponent = () => {
               >
                 <MdLogout size={12} />
                 Disconnect Wallet
+              </button>
+            </div>
+          )}
+
+          {/* Debug Panel for Mobile */}
+          {isMobile && (
+            <div className="debug-panel absolute top-16 left-4 right-4 z-10 bg-black/80 text-white text-xs p-2 rounded border">
+              <div className="font-bold mb-1">Debug Info:</div>
+              <pre className="whitespace-pre-wrap">{debugInfo}</pre>
+              <button
+                onClick={refreshMobileConnection}
+                className="mt-2 px-2 py-1 bg-blue-600 text-white text-xs rounded"
+              >
+                Refresh Connection
               </button>
             </div>
           )}
