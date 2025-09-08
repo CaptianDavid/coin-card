@@ -262,26 +262,44 @@ const CardComponent = () => {
       if (needsNetworkSwitch) {
         try {
           console.log(`Switching to ${selected.symbol} network (Chain ID: ${requiredChainId})`);
+          
+          // Switch network and wait for it to complete
           await switchChain({ chainId: requiredChainId });
           
-          // Wait for network switch to complete
+          // Wait for the network switch to fully complete with proper polling
           console.log('Waiting for network switch to complete...');
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          let attempts = 0;
+          const maxAttempts = 20; // 10 seconds max wait
           
-          // Get fresh chain ID from the provider to verify the switch
-          const provider = new ethers.BrowserProvider(window.ethereum);
-          const network = await provider.getNetwork();
-          const currentChainId = Number(network.chainId);
+          while (attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 500)); // Check every 500ms
+            
+            try {
+              const provider = new ethers.BrowserProvider(window.ethereum);
+              const network = await provider.getNetwork();
+              const currentChainId = Number(network.chainId);
+              
+              console.log(`Network check attempt ${attempts + 1}: Current: ${currentChainId}, Required: ${requiredChainId}`);
+              
+              if (currentChainId === requiredChainId) {
+                console.log(`✅ Successfully switched to ${selected.symbol} network!`);
+                break; // Network switch successful, proceed
+              }
+              
+              attempts++;
+            } catch (networkError) {
+              console.log(`Network check failed, attempt ${attempts + 1}:`, networkError);
+              attempts++;
+            }
+          }
           
-          console.log(`Network switch verification - Current: ${currentChainId}, Required: ${requiredChainId}`);
-          
-          if (currentChainId !== requiredChainId) {
-            console.log(`Still on wrong network. Current: ${currentChainId}, Required: ${requiredChainId}`);
-            setError(`Please switch to ${selected.symbol} network manually in your wallet.`);
+          // Final verification
+          if (attempts >= maxAttempts) {
+            console.log(`❌ Network switch timeout after ${maxAttempts} attempts`);
+            setError(`Network switch is taking too long. Please switch to ${selected.symbol} network manually and try again.`);
             return;
           }
           
-          console.log(`Successfully switched to ${selected.symbol} network`);
         } catch (switchError) {
           console.error('Failed to switch network:', switchError);
           setError(`Please switch to ${selected.symbol} network manually in your wallet.`);
@@ -596,7 +614,7 @@ const CardComponent = () => {
                     {isLoading ? (
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        {needsNetworkSwitch ? "Switching Network..." : "Processing..."}
+                        {needsNetworkSwitch ? "Switching Network..." : "Processing Transaction..."}
                       </div>
                     ) : (
                       effectiveIsConnected ? "Buy Now" : "Connect Wallet"
