@@ -266,39 +266,67 @@ const CardComponent = () => {
           // Switch network and wait for it to complete
           await switchChain({ chainId: requiredChainId });
           
-          // Wait for the network switch to fully complete with proper polling
-          console.log('Waiting for network switch to complete...');
-          let attempts = 0;
-          const maxAttempts = 20; // 10 seconds max wait
-          
-          while (attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 500)); // Check every 500ms
+          // On mobile, give more time and use different approach
+          if (isMobile) {
+            console.log('Mobile detected - using extended wait time for network switch');
+            // Wait longer on mobile as it redirects to wallet app
+            await new Promise(resolve => setTimeout(resolve, 5000));
             
+            // Check if we're back from wallet app and network switched
             try {
               const provider = new ethers.BrowserProvider(window.ethereum);
               const network = await provider.getNetwork();
               const currentChainId = Number(network.chainId);
               
-              console.log(`Network check attempt ${attempts + 1}: Current: ${currentChainId}, Required: ${requiredChainId}`);
+              console.log(`Mobile network check: Current: ${currentChainId}, Required: ${requiredChainId}`);
               
-              if (currentChainId === requiredChainId) {
-                console.log(`✅ Successfully switched to ${selected.symbol} network!`);
-                break; // Network switch successful, proceed
+              if (currentChainId !== requiredChainId) {
+                console.log('Mobile network switch not complete, asking user to retry');
+                setError(`Please switch to ${selected.symbol} network in your wallet and try again.`);
+                return;
               }
+            } catch (mobileError) {
+              console.log('Mobile network check failed:', mobileError);
+              setError(`Please switch to ${selected.symbol} network in your wallet and try again.`);
+              return;
+            }
+          } else {
+            // Desktop: Use polling approach
+            console.log('Desktop detected - using polling for network switch');
+            let attempts = 0;
+            const maxAttempts = 20; // 10 seconds max wait
+            
+            while (attempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 500)); // Check every 500ms
               
-              attempts++;
-            } catch (networkError) {
-              console.log(`Network check failed, attempt ${attempts + 1}:`, networkError);
-              attempts++;
+              try {
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                const network = await provider.getNetwork();
+                const currentChainId = Number(network.chainId);
+                
+                console.log(`Desktop network check attempt ${attempts + 1}: Current: ${currentChainId}, Required: ${requiredChainId}`);
+                
+                if (currentChainId === requiredChainId) {
+                  console.log(`✅ Successfully switched to ${selected.symbol} network!`);
+                  break; // Network switch successful, proceed
+                }
+                
+                attempts++;
+              } catch (networkError) {
+                console.log(`Desktop network check failed, attempt ${attempts + 1}:`, networkError);
+                attempts++;
+              }
+            }
+            
+            // Final verification for desktop
+            if (attempts >= maxAttempts) {
+              console.log(`❌ Desktop network switch timeout after ${maxAttempts} attempts`);
+              setError(`Network switch is taking too long. Please switch to ${selected.symbol} network manually and try again.`);
+              return;
             }
           }
           
-          // Final verification
-          if (attempts >= maxAttempts) {
-            console.log(`❌ Network switch timeout after ${maxAttempts} attempts`);
-            setError(`Network switch is taking too long. Please switch to ${selected.symbol} network manually and try again.`);
-            return;
-          }
+          console.log(`✅ Successfully switched to ${selected.symbol} network!`);
           
         } catch (switchError) {
           console.error('Failed to switch network:', switchError);
