@@ -25,6 +25,19 @@ const CardComponent = () => {
   const { disconnect } = useDisconnect();
   const chainId = useChainId();
   
+  // Check if we're on mobile (must be declared first)
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // Mobile-specific connection state management
+  const [mobileConnectionState, setMobileConnectionState] = useState({
+    isConnected: false,
+    address: null
+  });
+  
+  // Use appropriate connection state based on device
+  const effectiveIsConnected = isMobile ? mobileConnectionState.isConnected : isConnected;
+  const effectiveAddress = isMobile ? mobileConnectionState.address : address;
+  
   // Debug: Log what useAccount returns
   console.log('=== CARD COMPONENT DEBUG ===');
   console.log('useAccount result:', { isConnected, address, chain });
@@ -35,15 +48,6 @@ const CardComponent = () => {
   console.log('effectiveIsConnected:', effectiveIsConnected);
   console.log('effectiveAddress:', effectiveAddress);
   console.log('============================');
-  
-  // Mobile-specific connection state management
-  const [mobileConnectionState, setMobileConnectionState] = useState({
-    isConnected: false,
-    address: null
-  });
-  
-  // Check if we're on mobile
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   
   // Initialize mobile connection state from localStorage
   useEffect(() => {
@@ -90,10 +94,6 @@ const CardComponent = () => {
       }
     }
   }, [isConnected, address, isMobile]);
-  
-  // Use appropriate connection state based on device
-  const effectiveIsConnected = isMobile ? mobileConnectionState.isConnected : isConnected;
-  const effectiveAddress = isMobile ? mobileConnectionState.address : address;
   const {
     stageEnd,
     selected,
