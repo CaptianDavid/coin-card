@@ -38,32 +38,6 @@ const CardComponent = () => {
   const effectiveIsConnected = isMobile ? mobileConnectionState.isConnected : isConnected;
   const effectiveAddress = isMobile ? mobileConnectionState.address : address;
   
-  // Update debug info for mobile
-  const updateDebugInfo = () => {
-    const debug = `
-      Mobile: ${isMobile}
-      Wagmi Connected: ${isConnected}
-      Wagmi Address: ${address ? address.slice(0, 6) + '...' + address.slice(-4) : 'None'}
-      Mobile Connected: ${mobileConnectionState.isConnected}
-      Mobile Address: ${mobileConnectionState.address ? mobileConnectionState.address.slice(0, 6) + '...' + mobileConnectionState.address.slice(-4) : 'None'}
-      Effective Connected: ${effectiveIsConnected}
-      Effective Address: ${effectiveAddress ? effectiveAddress.slice(0, 6) + '...' + effectiveAddress.slice(-4) : 'None'}
-      Chain ID: ${chainId}
-      localStorage: ${localStorage.getItem('walletConnected')}
-      localStorage Address: ${localStorage.getItem('walletAddress') ? localStorage.getItem('walletAddress').slice(0, 6) + '...' + localStorage.getItem('walletAddress').slice(-4) : 'None'}
-      
-      === PRESALE CONTEXT DEBUG ===
-      window.ethereum: ${!!window.ethereum}
-      User agent: ${navigator.userAgent}
-      =============================
-    `;
-    setDebugInfo(debug);
-  };
-
-  // Update debug info whenever state changes
-  useEffect(() => {
-    updateDebugInfo();
-  }, [isConnected, address, mobileConnectionState, effectiveIsConnected, effectiveAddress, chainId, isMobile]);
   
   // Initialize mobile connection state from localStorage
   useEffect(() => {
@@ -129,8 +103,6 @@ const CardComponent = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState("");
-  const [debugInfo, setDebugInfo] = useState("");
-  const [lastError, setLastError] = useState("");
 
   // Function to parse and format error messages
   const parseError = (error) => {
@@ -244,19 +216,22 @@ const CardComponent = () => {
       setIsLoading(true);
       
       if (!effectiveIsConnected) {
-        // If wallet is not connected, try to connect
+        // If wallet is not connected, just connect and return
         if (connectors.length > 0) {
           await connect({ connector: connectors[0] });
           // On mobile, wait a bit for the connection to be established
           if (isMobile) {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
+          // After connecting, just return - don't proceed with transaction
+          return;
         } else {
           setError("No wallet connectors available");
           return;
         }
       }
       
+      // Only proceed with transaction if wallet is connected
       // Check if amount is entered and meets minimum
       if (!amount || Number(amount) <= 0) {
         setError("Please enter a valid amount");
@@ -272,7 +247,7 @@ const CardComponent = () => {
         refreshMobileConnection();
         if (!effectiveIsConnected) {
           setError("Wallet connection lost. Please reconnect your wallet.");
-      return;
+          return;
         }
       }
       
@@ -283,9 +258,7 @@ const CardComponent = () => {
       console.log("result trx", result);
     } catch (error) {
       console.error("Error in buy token flow:", error);
-      const errorMessage = parseError(error);
-      setError(errorMessage);
-      setLastError(`Error: ${errorMessage}\nStack: ${error.stack || 'No stack trace'}`);
+      setError(parseError(error));
     } finally {
       setIsLoading(false);
     }
@@ -381,25 +354,6 @@ const CardComponent = () => {
             </div>
           )}
 
-          {/* Debug Panel for Mobile - Moved to bottom */}
-          {isMobile && (
-            <div className="debug-panel fixed bottom-20 left-4 right-4 z-10 bg-black/80 text-white text-xs p-2 rounded border max-h-40 overflow-y-auto">
-              <div className="font-bold mb-1">Debug Info:</div>
-              <pre className="whitespace-pre-wrap text-xs">{debugInfo}</pre>
-              {lastError && (
-                <div className="mt-2 p-2 bg-red-900/50 rounded">
-                  <div className="font-bold text-red-300">Last Error:</div>
-                  <pre className="whitespace-pre-wrap text-red-200 text-xs">{lastError}</pre>
-                </div>
-              )}
-              <button
-                onClick={refreshMobileConnection}
-                className="mt-2 px-2 py-1 bg-blue-600 text-white text-xs rounded"
-              >
-                Refresh Connection
-              </button>
-            </div>
-          )}
 
           <div className="gittu-banner-card ">
             <div className="gittu-banner-card-inner">
