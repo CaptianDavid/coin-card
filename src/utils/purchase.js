@@ -92,16 +92,18 @@ async function buyWithERC20Token(presaleAddress, amountHuman, tokenCfg, provider
     const amountBN = BigInt(amount.toString());
     
     if (allowanceBN < amountBN) {
-      console.log("Allowance insufficient, approving MaxUint256...");
+      console.log("Allowance insufficient, approving amount...");
+      // Use 2x the required amount instead of MaxUint256 to avoid security warnings
+      const approvalAmount = amount * 2n;
       try {
-        const estApprove = await erc20.estimateGas.approve(presaleAddress, MaxUint256);
-        const approveTx = await erc20.approve(presaleAddress, MaxUint256, {
+        const estApprove = await erc20.estimateGas.approve(presaleAddress, approvalAmount);
+        const approveTx = await erc20.approve(presaleAddress, approvalAmount, {
           gasLimit: (estApprove * 12n) / 10n,
         });
         await approveTx.wait();
       } catch (err) {
         console.warn("estimateGas failed for approve, using fallback gas:", err);
-        const approveTx = await erc20.approve(presaleAddress, MaxUint256, {
+        const approveTx = await erc20.approve(presaleAddress, approvalAmount, {
           gasLimit: 100000n,
         });
         await approveTx.wait();
