@@ -18,6 +18,7 @@ import CopyIframeButton from "../CopyIframeButton";
 import { coins } from "../../helpers";
 import useCardHook from "./useCardHook";
 import { useAccount, useConnect, useChainId, useDisconnect, useSwitchChain } from "wagmi";
+import { ethers } from "ethers";
 
 const CardComponent = () => {
   const { isConnected, address, chain, chainId: chain_id } = useAccount();
@@ -124,6 +125,7 @@ const CardComponent = () => {
   // Check if user needs to switch networks
   const requiredChainId = getRequiredChainId(selected?.symbol);
   const needsNetworkSwitch = effectiveIsConnected && chainId !== requiredChainId;
+
 
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -256,10 +258,35 @@ const CardComponent = () => {
         }
       }
 
-      // Check if user needs to switch networks
+      // Automatically switch network if needed before transaction
       if (needsNetworkSwitch) {
-        setError(`Please switch to ${selected.symbol} network to continue. Click "Switch Network" below.`);
-        return;
+        try {
+          console.log(`Switching to ${selected.symbol} network (Chain ID: ${requiredChainId})`);
+          await switchChain({ chainId: requiredChainId });
+          
+          // Wait for network switch to complete
+          console.log('Waiting for network switch to complete...');
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          // Get fresh chain ID from the provider to verify the switch
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const network = await provider.getNetwork();
+          const currentChainId = Number(network.chainId);
+          
+          console.log(`Network switch verification - Current: ${currentChainId}, Required: ${requiredChainId}`);
+          
+          if (currentChainId !== requiredChainId) {
+            console.log(`Still on wrong network. Current: ${currentChainId}, Required: ${requiredChainId}`);
+            setError(`Please switch to ${selected.symbol} network manually in your wallet.`);
+            return;
+          }
+          
+          console.log(`Successfully switched to ${selected.symbol} network`);
+        } catch (switchError) {
+          console.error('Failed to switch network:', switchError);
+          setError(`Please switch to ${selected.symbol} network manually in your wallet.`);
+          return;
+        }
       }
       
       // Only proceed with transaction if wallet is connected and on correct network
@@ -348,25 +375,6 @@ const CardComponent = () => {
     }
   };
 
-  // Handle network switching
-  const handleSwitchNetwork = async () => {
-    try {
-      setError("");
-      setIsLoading(true);
-      
-      await switchChain({ chainId: requiredChainId });
-      
-      // Wait a moment for the network switch to complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSuccess(`Switched to ${selected.symbol} network successfully!`);
-    } catch (error) {
-      console.error('Failed to switch network:', error);
-      setError('Failed to switch network. Please switch manually in your wallet.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
   return (
     <BannerWrapper>
       <div className="container2 flex flex-col items-center justify-center min-h-screen mx-auto">
@@ -578,38 +586,18 @@ const CardComponent = () => {
                     )}
                   </div> */}
 
-                  {/* Network Switch Button */}
-                  {needsNetworkSwitch && (
-                    <Button 
-                      onClick={handleSwitchNetwork} 
-                      size="large"
-                      disabled={isLoading}
-                      className="mb-3 bg-orange-500 hover:bg-orange-600"
-                    >
-                      {isLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Switching...
-                        </div>
-                      ) : (
-                        `Switch to ${selected.symbol} Network`
-                      )}
-                    </Button>
-                  )}
 
                   <Button 
                     onClick={handleBuyToken} 
                     size="large"
-                    disabled={isLoading || needsNetworkSwitch}
-                    className={isLoading || needsNetworkSwitch ? "opacity-50 cursor-not-allowed" : ""}
+                    disabled={isLoading}
+                    className={isLoading ? "opacity-50 cursor-not-allowed" : ""}
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Processing...
+                        {needsNetworkSwitch ? "Switching Network..." : "Processing..."}
                       </div>
-                    ) : needsNetworkSwitch ? (
-                      `Switch to ${selected.symbol} Network First`
                     ) : (
                       effectiveIsConnected ? "Buy Now" : "Connect Wallet"
                     )}
