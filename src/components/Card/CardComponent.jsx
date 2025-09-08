@@ -17,12 +17,13 @@ import SelectDropdown from "../select/SelectDropdown";
 import CopyIframeButton from "../CopyIframeButton";
 import { coins } from "../../helpers";
 import useCardHook from "./useCardHook";
-import { useAccount, useConnect, useChainId, useDisconnect } from "wagmi";
+import { useAccount, useConnect, useChainId, useDisconnect, useSwitchChain } from "wagmi";
 
 const CardComponent = () => {
   const { isConnected, address, chain, chainId: chain_id } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
   const chainId = useChainId();
   
   // Check if we're on mobile (must be declared first)
@@ -99,6 +100,30 @@ const CardComponent = () => {
     userBalance,
     setUserBalance,
   } = useCardHook(chainId);
+
+  // Function to get required chain ID based on selected token
+  const getRequiredChainId = (tokenSymbol) => {
+    switch (tokenSymbol) {
+      case 'ETH':
+        return 1; // Ethereum
+      case 'BNB':
+        return 56; // BNB Chain
+      case 'MATIC':
+        return 137; // Polygon
+      case 'AVAX':
+        return 43114; // Avalanche
+      case 'USDT':
+        return 56; // BNB Chain (for USDT)
+      case 'USDC':
+        return 1; // Ethereum (for USDC)
+      default:
+        return 56; // Default to BNB Chain
+    }
+  };
+
+  // Check if user needs to switch networks
+  const requiredChainId = getRequiredChainId(selected?.symbol);
+  const needsNetworkSwitch = effectiveIsConnected && chainId !== requiredChainId;
 
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -230,8 +255,14 @@ const CardComponent = () => {
           return;
         }
       }
+
+      // Check if user needs to switch networks
+      if (needsNetworkSwitch) {
+        setError(`Please switch to ${selected.symbol} network to continue. Click "Switch Network" below.`);
+        return;
+      }
       
-      // Only proceed with transaction if wallet is connected
+      // Only proceed with transaction if wallet is connected and on correct network
       // Check if amount is entered and meets minimum
       if (!amount || Number(amount) <= 0) {
         setError("Please enter a valid amount");
@@ -247,7 +278,7 @@ const CardComponent = () => {
         refreshMobileConnection();
         if (!effectiveIsConnected) {
           setError("Wallet connection lost. Please reconnect your wallet.");
-          return;
+      return;
         }
       }
       
@@ -314,6 +345,26 @@ const CardComponent = () => {
         });
         console.log('Mobile connection cleared - no saved state');
       }
+    }
+  };
+
+  // Handle network switching
+  const handleSwitchNetwork = async () => {
+    try {
+      setError("");
+      setIsLoading(true);
+      
+      await switchChain({ chainId: requiredChainId });
+      
+      // Wait a moment for the network switch to complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setSuccess(`Switched to ${selected.symbol} network successfully!`);
+    } catch (error) {
+      console.error('Failed to switch network:', error);
+      setError('Failed to switch network. Please switch manually in your wallet.');
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
@@ -527,17 +578,38 @@ const CardComponent = () => {
                     )}
                   </div> */}
 
+                  {/* Network Switch Button */}
+                  {needsNetworkSwitch && (
+                    <Button 
+                      onClick={handleSwitchNetwork} 
+                      size="large"
+                      disabled={isLoading}
+                      className="mb-3 bg-orange-500 hover:bg-orange-600"
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Switching...
+                        </div>
+                      ) : (
+                        `Switch to ${selected.symbol} Network`
+                      )}
+                    </Button>
+                  )}
+
                   <Button 
                     onClick={handleBuyToken} 
                     size="large"
-                    disabled={isLoading}
-                    className={isLoading ? "opacity-50 cursor-not-allowed" : ""}
+                    disabled={isLoading || needsNetworkSwitch}
+                    className={isLoading || needsNetworkSwitch ? "opacity-50 cursor-not-allowed" : ""}
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         Processing...
                       </div>
+                    ) : needsNetworkSwitch ? (
+                      `Switch to ${selected.symbol} Network First`
                     ) : (
                       effectiveIsConnected ? "Buy Now" : "Connect Wallet"
                     )}
