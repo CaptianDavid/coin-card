@@ -138,9 +138,11 @@ export default function PresaleContextProvider({ children }) {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (isMobile) {
       const savedConnection = localStorage.getItem('walletConnected');
-      if (savedConnection !== 'true') {
+      const savedAddress = localStorage.getItem('walletAddress');
+      if (savedConnection !== 'true' || !savedAddress) {
         throw new Error('Wallet not connected. Please connect your wallet first.');
       }
+      console.log('Mobile connection verified:', { savedConnection, savedAddress });
     }
 
     return await buyService({

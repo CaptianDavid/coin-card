@@ -25,65 +25,66 @@ const CardComponent = () => {
   const { disconnect } = useDisconnect();
   const chainId = useChainId();
   
-  // Mobile-specific state management
-  const [isMobileConnected, setIsMobileConnected] = useState(false);
-  const [mobileAddress, setMobileAddress] = useState(null);
-  
   // Debug: Log what useAccount returns
   console.log('=== CARD COMPONENT DEBUG ===');
   console.log('useAccount result:', { isConnected, address, chain });
   console.log('useChainId result:', chainId);
   console.log('useChainId result 2:', chain_id);
-  console.log('isMobileConnected:', isMobileConnected);
-  console.log('mobileAddress:', mobileAddress);
   console.log('============================');
   
-  // Handle mobile wallet connection state
+  // Mobile-specific connection state management
+  const [mobileConnectionState, setMobileConnectionState] = useState({
+    isConnected: false,
+    address: null
+  });
+  
+  // Check if we're on mobile
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // Initialize mobile connection state from localStorage
   useEffect(() => {
-    // Check if we're on mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
     if (isMobile) {
-      // On mobile, check for wallet connection in localStorage
       const savedConnection = localStorage.getItem('walletConnected');
       const savedAddress = localStorage.getItem('walletAddress');
       
       if (savedConnection === 'true' && savedAddress) {
-        setIsMobileConnected(true);
-        setMobileAddress(savedAddress);
-        console.log('Restored mobile connection:', { address: savedAddress });
+        setMobileConnectionState({
+          isConnected: true,
+          address: savedAddress
+        });
+        console.log('Restored mobile connection from localStorage:', { address: savedAddress });
       }
     }
-  }, []);
+  }, [isMobile]);
   
-  // Update mobile state when wallet connects/disconnects
+  // Update mobile connection state when wagmi state changes
   useEffect(() => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
     if (isMobile) {
       if (isConnected && address) {
-        setIsMobileConnected(true);
-        setMobileAddress(address);
+        // Wallet connected - update both states
+        setMobileConnectionState({
+          isConnected: true,
+          address: address
+        });
         localStorage.setItem('walletConnected', 'true');
         localStorage.setItem('walletAddress', address);
         console.log('Mobile wallet connected:', address);
-      } else {
-        setIsMobileConnected(false);
-        setMobileAddress(null);
+      } else if (!isConnected && !address) {
+        // Wallet disconnected - clear both states
+        setMobileConnectionState({
+          isConnected: false,
+          address: null
+        });
         localStorage.removeItem('walletConnected');
         localStorage.removeItem('walletAddress');
         console.log('Mobile wallet disconnected');
       }
     }
-  }, [isConnected, address]);
+  }, [isConnected, address, isMobile]);
   
-  // Use mobile state if on mobile, otherwise use wagmi state
-  const effectiveIsConnected = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
-    ? isMobileConnected 
-    : isConnected;
-  const effectiveAddress = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-    ? mobileAddress
-    : address;
+  // Use appropriate connection state based on device
+  const effectiveIsConnected = isMobile ? mobileConnectionState.isConnected : isConnected;
+  const effectiveAddress = isMobile ? mobileConnectionState.address : address;
   const {
     stageEnd,
     selected,
@@ -216,29 +217,40 @@ const CardComponent = () => {
       setIsLoading(true);
       
       if (!effectiveIsConnected) {
-        // If wallet is not connected, connect with the first available connector
+        // If wallet is not connected, try to connect
         if (connectors.length > 0) {
           await connect({ connector: connectors[0] });
+          // On mobile, wait a bit for the connection to be established
+          if (isMobile) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
         } else {
           setError("No wallet connectors available");
           return;
         }
-      } else {
-        // If wallet is connected, check if amount is entered and meets minimum
-        if (!amount || Number(amount) <= 0) {
-          setError("Please enter a valid amount");
-          return;
-        }
-        if (Number(valueUsd) < 10) {
-          setError("Minimum transaction amount is $10");
-      return;
-        }
-        // Execute the transaction with success callback
-        const result = await buyToken((txResult) => {
-          setSuccess("🎉 Transaction successful! Your STAYX tokens have been purchased and added to your wallet.");
-        });
-        console.log("result trx", result);
       }
+      
+      // Check if amount is entered and meets minimum
+      if (!amount || Number(amount) <= 0) {
+        setError("Please enter a valid amount");
+        return;
+      }
+      if (Number(valueUsd) < 10) {
+        setError("Minimum transaction amount is $10");
+        return;
+      }
+      
+      // For mobile, double-check connection before proceeding
+      if (isMobile && !effectiveIsConnected) {
+        setError("Wallet connection lost. Please reconnect your wallet.");
+        return;
+      }
+      
+      // Execute the transaction with success callback
+      const result = await buyToken((txResult) => {
+        setSuccess("🎉 Transaction successful! Your STAYX tokens have been purchased and added to your wallet.");
+      });
+      console.log("result trx", result);
     } catch (error) {
       console.error("Error in buy token flow:", error);
       setError(parseError(error));
@@ -249,8 +261,31 @@ const CardComponent = () => {
 
   const handleDisconnect = () => {
     disconnect();
+    if (isMobile) {
+      setMobileConnectionState({
+        isConnected: false,
+        address: null
+      });
+      localStorage.removeItem('walletConnected');
+      localStorage.removeItem('walletAddress');
+    }
     setError("");
     setSuccess("");
+  };
+
+  // Manual connection check for mobile
+  const checkMobileConnection = async () => {
+    if (isMobile && !effectiveIsConnected) {
+      try {
+        // Try to reconnect
+        if (connectors.length > 0) {
+          await connect({ connector: connectors[0] });
+        }
+      } catch (error) {
+        console.error('Failed to reconnect on mobile:', error);
+        setError('Failed to connect wallet. Please try again.');
+      }
+    }
   };
   return (
     <BannerWrapper>
