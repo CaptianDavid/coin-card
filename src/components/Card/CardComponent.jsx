@@ -30,6 +30,10 @@ const CardComponent = () => {
   console.log('useAccount result:', { isConnected, address, chain });
   console.log('useChainId result:', chainId);
   console.log('useChainId result 2:', chain_id);
+  console.log('isMobile:', isMobile);
+  console.log('mobileConnectionState:', mobileConnectionState);
+  console.log('effectiveIsConnected:', effectiveIsConnected);
+  console.log('effectiveAddress:', effectiveAddress);
   console.log('============================');
   
   // Mobile-specific connection state management
@@ -60,6 +64,8 @@ const CardComponent = () => {
   // Update mobile connection state when wagmi state changes
   useEffect(() => {
     if (isMobile) {
+      console.log('Mobile connection effect triggered:', { isConnected, address });
+      
       if (isConnected && address) {
         // Wallet connected - update both states
         setMobileConnectionState({
@@ -68,16 +74,19 @@ const CardComponent = () => {
         });
         localStorage.setItem('walletConnected', 'true');
         localStorage.setItem('walletAddress', address);
-        console.log('Mobile wallet connected:', address);
+        console.log('Mobile wallet connected and saved:', address);
       } else if (!isConnected && !address) {
-        // Wallet disconnected - clear both states
-        setMobileConnectionState({
-          isConnected: false,
-          address: null
-        });
-        localStorage.removeItem('walletConnected');
-        localStorage.removeItem('walletAddress');
-        console.log('Mobile wallet disconnected');
+        // Only clear if we're sure it's disconnected
+        const savedConnection = localStorage.getItem('walletConnected');
+        if (savedConnection !== 'true') {
+          setMobileConnectionState({
+            isConnected: false,
+            address: null
+          });
+          localStorage.removeItem('walletConnected');
+          localStorage.removeItem('walletAddress');
+          console.log('Mobile wallet disconnected and cleared');
+        }
       }
     }
   }, [isConnected, address, isMobile]);
@@ -240,10 +249,13 @@ const CardComponent = () => {
         return;
       }
       
-      // For mobile, double-check connection before proceeding
-      if (isMobile && !effectiveIsConnected) {
-        setError("Wallet connection lost. Please reconnect your wallet.");
-        return;
+      // For mobile, refresh connection state and double-check before proceeding
+      if (isMobile) {
+        refreshMobileConnection();
+        if (!effectiveIsConnected) {
+          setError("Wallet connection lost. Please reconnect your wallet.");
+          return;
+        }
       }
       
       // Execute the transaction with success callback
@@ -287,6 +299,30 @@ const CardComponent = () => {
       }
     }
   };
+
+  // Force refresh mobile connection state
+  const refreshMobileConnection = () => {
+    if (isMobile) {
+      const savedConnection = localStorage.getItem('walletConnected');
+      const savedAddress = localStorage.getItem('walletAddress');
+      
+      console.log('Refreshing mobile connection:', { savedConnection, savedAddress });
+      
+      if (savedConnection === 'true' && savedAddress) {
+        setMobileConnectionState({
+          isConnected: true,
+          address: savedAddress
+        });
+        console.log('Mobile connection refreshed from localStorage');
+      } else {
+        setMobileConnectionState({
+          isConnected: false,
+          address: null
+        });
+        console.log('Mobile connection cleared - no saved state');
+      }
+    }
+  };
   return (
     <BannerWrapper>
       <div className="container2 flex flex-col items-center justify-center min-h-screen mx-auto">
@@ -305,6 +341,15 @@ const CardComponent = () => {
               <span className="text-white/70 text-xs">
                 {effectiveAddress.slice(0, 6)}...{effectiveAddress.slice(-4)}
               </span>
+              {isMobile && (
+                <button
+                  onClick={refreshMobileConnection}
+                  className="flex items-center gap-1 px-2 py-1 text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                  title="Refresh Connection"
+                >
+                  ↻
+                </button>
+              )}
               <button
                 onClick={handleDisconnect}
                 className="flex items-center gap-1 px-2 py-1 text-xs text-red-400 hover:text-red-300 transition-colors cursor-pointer"
