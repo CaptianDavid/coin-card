@@ -138,19 +138,32 @@ export default function PresaleContextProvider({ children }) {
 
     // Mobile-specific: Check if wallet is actually connected
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log('=== CONNECTION CHECK DEBUG ===');
+    console.log('isMobile:', isMobile);
+    console.log('isConnected:', isConnected);
+    console.log('address:', address);
+    console.log('user from signer:', user);
+    
     if (isMobile) {
       const savedConnection = localStorage.getItem('walletConnected');
       const savedAddress = localStorage.getItem('walletAddress');
+      console.log('Mobile localStorage check:', { savedConnection, savedAddress });
+      
       if (savedConnection !== 'true' || !savedAddress) {
+        console.log('❌ Mobile connection failed - localStorage check');
         throw new Error('Wallet not connected. Please connect your wallet first.');
       }
-      console.log('Mobile connection verified:', { savedConnection, savedAddress });
+      console.log('✅ Mobile connection verified:', { savedConnection, savedAddress });
     } else {
       // For desktop, check if wagmi says connected
+      console.log('Desktop connection check:', { isConnected, address });
       if (!isConnected || !address) {
+        console.log('❌ Desktop connection failed - wagmi check');
         throw new Error('Wallet not connected. Please connect your wallet first.');
       }
+      console.log('✅ Desktop connection verified');
     }
+    console.log('==============================');
 
     return await buyService({
       provider,

@@ -15,6 +15,8 @@ export async function buy({ provider, user, chainId, presaleAddress, payAssetKey
   console.log("payAssetKey:", payAssetKey);
   console.log("amountHuman:", amountHuman);
   console.log("user:", user);
+  console.log("provider exists:", !!provider);
+  console.log("===============================");
 
   // Check if contract exists
   const code = await provider.getCode(presaleAddress);

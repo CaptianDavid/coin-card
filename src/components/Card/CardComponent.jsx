@@ -125,6 +125,7 @@ const CardComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [debugInfo, setDebugInfo] = useState("");
+  const [lastError, setLastError] = useState("");
 
   // Function to parse and format error messages
   const parseError = (error) => {
@@ -277,7 +278,9 @@ const CardComponent = () => {
       console.log("result trx", result);
     } catch (error) {
       console.error("Error in buy token flow:", error);
-      setError(parseError(error));
+      const errorMessage = parseError(error);
+      setError(errorMessage);
+      setLastError(`Error: ${errorMessage}\nStack: ${error.stack || 'No stack trace'}`);
     } finally {
       setIsLoading(false);
     }
@@ -378,6 +381,12 @@ const CardComponent = () => {
             <div className="debug-panel absolute top-16 left-4 right-4 z-10 bg-black/80 text-white text-xs p-2 rounded border">
               <div className="font-bold mb-1">Debug Info:</div>
               <pre className="whitespace-pre-wrap">{debugInfo}</pre>
+              {lastError && (
+                <div className="mt-2 p-2 bg-red-900/50 rounded">
+                  <div className="font-bold text-red-300">Last Error:</div>
+                  <pre className="whitespace-pre-wrap text-red-200 text-xs">{lastError}</pre>
+                </div>
+              )}
               <button
                 onClick={refreshMobileConnection}
                 className="mt-2 px-2 py-1 bg-blue-600 text-white text-xs rounded"
