@@ -326,24 +326,30 @@ const CardComponent = () => {
       console.log('Waiting for network switch to complete...');
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Verify the switch worked
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const network = await provider.getNetwork();
-        const currentChainId = Number(network.chainId);
-        
-        console.log(`Network switch verification: Current: ${currentChainId}, Required: ${requiredChainId}`);
-        
-        if (currentChainId === requiredChainId) {
-          setSuccess(`✅ Successfully switched to ${selected.symbol} network! You can now proceed with your purchase.`);
-          console.log(`✅ Successfully switched to ${selected.symbol} network!`);
-        } else {
-          setError(`Network switch incomplete. Please try again or switch manually in your wallet.`);
-          console.log(`❌ Network switch failed. Current: ${currentChainId}, Required: ${requiredChainId}`);
+      // On mobile, be more lenient with verification since it often works even if verification fails
+      if (isMobile) {
+        console.log('Mobile detected - assuming network switch succeeded');
+        setSuccess(`✅ Network switch initiated! Please check your wallet and return to complete the purchase.`);
+      } else {
+        // Desktop: Verify the switch worked
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const network = await provider.getNetwork();
+          const currentChainId = Number(network.chainId);
+          
+          console.log(`Desktop network switch verification: Current: ${currentChainId}, Required: ${requiredChainId}`);
+          
+          if (currentChainId === requiredChainId) {
+            setSuccess(`✅ Successfully switched to ${selected.symbol} network! You can now proceed with your purchase.`);
+            console.log(`✅ Successfully switched to ${selected.symbol} network!`);
+          } else {
+            setError(`Network switch incomplete. Please try again or switch manually in your wallet.`);
+            console.log(`❌ Network switch failed. Current: ${currentChainId}, Required: ${requiredChainId}`);
+          }
+        } catch (verifyError) {
+          console.error('Desktop network verification failed:', verifyError);
+          setError(`Network switch verification failed. Please try again.`);
         }
-      } catch (verifyError) {
-        console.error('Network verification failed:', verifyError);
-        setError(`Network switch verification failed. Please try again.`);
       }
       
     } catch (switchError) {
@@ -541,32 +547,32 @@ const CardComponent = () => {
                   {/* Network Switch Button */}
                   {needsNetworkSwitch && (
                     <div className="mb-4 p-4 rounded-lg bg-orange-500/20 border border-orange-500/30 backdrop-blur-sm">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-500/30 flex items-center justify-center mt-0.5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-500/30 flex items-center justify-center">
                           <span className="text-orange-400 text-xs">!</span>
                         </div>
                         <div className="flex-1">
-                          <p className="text-orange-400 text-sm font-medium mb-2">Network Switch Required</p>
-                          <p className="text-orange-300 text-sm leading-relaxed mb-3">
-                            Please switch to {selected.symbol} network to continue with your purchase.
+                          <p className="text-orange-400 text-sm font-medium">Network Switch Required</p>
+                          <p className="text-orange-300 text-xs mt-1">
+                            Switch to {selected.symbol} network to continue
                           </p>
-                          <Button 
-                            onClick={handleSwitchNetwork} 
-                            size="small"
-                            disabled={isSwitchingNetwork}
-                            className="bg-orange-500 hover:bg-orange-600 text-white"
-                          >
-                            {isSwitchingNetwork ? (
-                              <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                Switching...
-                              </div>
-                            ) : (
-                              `Switch to ${selected.symbol} Network`
-                            )}
-                          </Button>
                         </div>
                       </div>
+                      <Button 
+                        onClick={handleSwitchNetwork} 
+                        size="large"
+                        disabled={isSwitchingNetwork}
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
+                      >
+                        {isSwitchingNetwork ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Switching Network...
+                          </div>
+                        ) : (
+                          `Switch to ${selected.symbol} Network`
+                        )}
+                      </Button>
                     </div>
                   )}
 
