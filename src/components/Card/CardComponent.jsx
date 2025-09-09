@@ -130,6 +130,7 @@ const CardComponent = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState("");
+  const [isSwitchingNetwork, setIsSwitchingNetwork] = useState(false);
 
   // Function to parse and format error messages
   const parseError = (error) => {
@@ -258,81 +259,10 @@ const CardComponent = () => {
         }
       }
 
-      // Automatically switch network if needed before transaction
+      // Check if we need to switch networks - show button instead of auto-switching
       if (needsNetworkSwitch) {
-        try {
-          console.log(`Switching to ${selected.symbol} network (Chain ID: ${requiredChainId})`);
-          
-          // Switch network and wait for it to complete
-          await switchChain({ chainId: requiredChainId });
-          
-          // On mobile, give more time and use different approach
-          if (isMobile) {
-            console.log('Mobile detected - using extended wait time for network switch');
-            // Wait longer on mobile as it redirects to wallet app
-            await new Promise(resolve => setTimeout(resolve, 5000));
-            
-            // Check if we're back from wallet app and network switched
-            try {
-              const provider = new ethers.BrowserProvider(window.ethereum);
-              const network = await provider.getNetwork();
-              const currentChainId = Number(network.chainId);
-              
-              console.log(`Mobile network check: Current: ${currentChainId}, Required: ${requiredChainId}`);
-              
-              if (currentChainId !== requiredChainId) {
-                console.log('Mobile network switch not complete, asking user to retry');
-                setError(`Please switch to ${selected.symbol} network in your wallet and try again.`);
-                return;
-              }
-            } catch (mobileError) {
-              console.log('Mobile network check failed:', mobileError);
-              setError(`Please switch to ${selected.symbol} network in your wallet and try again.`);
-              return;
-            }
-          } else {
-            // Desktop: Use polling approach
-            console.log('Desktop detected - using polling for network switch');
-            let attempts = 0;
-            const maxAttempts = 20; // 10 seconds max wait
-            
-            while (attempts < maxAttempts) {
-              await new Promise(resolve => setTimeout(resolve, 500)); // Check every 500ms
-              
-              try {
-                const provider = new ethers.BrowserProvider(window.ethereum);
-                const network = await provider.getNetwork();
-                const currentChainId = Number(network.chainId);
-                
-                console.log(`Desktop network check attempt ${attempts + 1}: Current: ${currentChainId}, Required: ${requiredChainId}`);
-                
-                if (currentChainId === requiredChainId) {
-                  console.log(`✅ Successfully switched to ${selected.symbol} network!`);
-                  break; // Network switch successful, proceed
-                }
-                
-                attempts++;
-              } catch (networkError) {
-                console.log(`Desktop network check failed, attempt ${attempts + 1}:`, networkError);
-                attempts++;
-              }
-            }
-            
-            // Final verification for desktop
-            if (attempts >= maxAttempts) {
-              console.log(`❌ Desktop network switch timeout after ${maxAttempts} attempts`);
-              setError(`Network switch is taking too long. Please switch to ${selected.symbol} network manually and try again.`);
-              return;
-            }
-          }
-          
-          console.log(`✅ Successfully switched to ${selected.symbol} network!`);
-          
-        } catch (switchError) {
-          console.error('Failed to switch network:', switchError);
-          setError(`Please switch to ${selected.symbol} network manually in your wallet.`);
-          return;
-        }
+        setError(`Please switch to ${selected.symbol} network first using the button below.`);
+        return;
       }
       
       // Only proceed with transaction if wallet is connected and on correct network
@@ -380,6 +310,48 @@ const CardComponent = () => {
     }
     setError("");
     setSuccess("");
+  };
+
+  // Handle network switching with clear UX
+  const handleSwitchNetwork = async () => {
+    try {
+      setIsSwitchingNetwork(true);
+      setError("");
+      setSuccess("");
+      
+      console.log(`Switching to ${selected.symbol} network (Chain ID: ${requiredChainId})`);
+      await switchChain({ chainId: requiredChainId });
+      
+      // Wait for network switch to complete
+      console.log('Waiting for network switch to complete...');
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Verify the switch worked
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const network = await provider.getNetwork();
+        const currentChainId = Number(network.chainId);
+        
+        console.log(`Network switch verification: Current: ${currentChainId}, Required: ${requiredChainId}`);
+        
+        if (currentChainId === requiredChainId) {
+          setSuccess(`✅ Successfully switched to ${selected.symbol} network! You can now proceed with your purchase.`);
+          console.log(`✅ Successfully switched to ${selected.symbol} network!`);
+        } else {
+          setError(`Network switch incomplete. Please try again or switch manually in your wallet.`);
+          console.log(`❌ Network switch failed. Current: ${currentChainId}, Required: ${requiredChainId}`);
+        }
+      } catch (verifyError) {
+        console.error('Network verification failed:', verifyError);
+        setError(`Network switch verification failed. Please try again.`);
+      }
+      
+    } catch (switchError) {
+      console.error('Failed to switch network:', switchError);
+      setError(`Failed to switch network. Please switch to ${selected.symbol} network manually in your wallet.`);
+    } finally {
+      setIsSwitchingNetwork(false);
+    }
   };
 
   // Manual connection check for mobile
@@ -566,6 +538,38 @@ const CardComponent = () => {
                     </li>
                   </ul>
 
+                  {/* Network Switch Button */}
+                  {needsNetworkSwitch && (
+                    <div className="mb-4 p-4 rounded-lg bg-orange-500/20 border border-orange-500/30 backdrop-blur-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-500/30 flex items-center justify-center mt-0.5">
+                          <span className="text-orange-400 text-xs">!</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-orange-400 text-sm font-medium mb-2">Network Switch Required</p>
+                          <p className="text-orange-300 text-sm leading-relaxed mb-3">
+                            Please switch to {selected.symbol} network to continue with your purchase.
+                          </p>
+                          <Button 
+                            onClick={handleSwitchNetwork} 
+                            size="small"
+                            disabled={isSwitchingNetwork}
+                            className="bg-orange-500 hover:bg-orange-600 text-white"
+                          >
+                            {isSwitchingNetwork ? (
+                              <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Switching...
+                              </div>
+                            ) : (
+                              `Switch to ${selected.symbol} Network`
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Error Display */}
                   {error && (
                     <div className="error-message mb-4 p-4 rounded-lg bg-red-500/20 border border-red-500/30 backdrop-blur-sm">
@@ -636,14 +640,16 @@ const CardComponent = () => {
                   <Button 
                     onClick={handleBuyToken} 
                     size="large"
-                    disabled={isLoading}
-                    className={isLoading ? "opacity-50 cursor-not-allowed" : ""}
+                    disabled={isLoading || needsNetworkSwitch}
+                    className={isLoading || needsNetworkSwitch ? "opacity-50 cursor-not-allowed" : ""}
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        {needsNetworkSwitch ? "Switching Network..." : "Processing Transaction..."}
+                        Processing Transaction...
                       </div>
+                    ) : needsNetworkSwitch ? (
+                      "Switch Network First"
                     ) : (
                       effectiveIsConnected ? "Buy Now" : "Connect Wallet"
                     )}
