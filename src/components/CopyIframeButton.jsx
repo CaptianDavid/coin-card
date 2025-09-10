@@ -13,8 +13,8 @@ const CopyIframeButton = () => {
 
   const iframeCode = `<iframe 
   src="${window.location.origin}" 
-  width="710" 
-  height="1400" 
+  width="680" 
+  height="700" 
   style="border:none; border-radius:16px; overflow:hidden;" 
    scrolling="no";
   title="Presale Card">
