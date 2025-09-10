@@ -15,7 +15,7 @@ const GlobalStyles = createGlobalStyle`
 
 html,
 body {
-    background: ${({ theme }) => theme.colors.bgBody};
+    // background: ${({ theme }) => theme.colors.bgBody};
     font-family: ${({ theme }) => theme.fonts.body};
     font-size: 15px; 
     font-weight: 500;

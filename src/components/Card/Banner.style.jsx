@@ -3,26 +3,6 @@ import styled from "styled-components";
 // import BackgroundImg from "../../../assets/images/banner/banner-bg.png";
 // //   background-image: url(${BackgroundImg});
 const BannerWrapper = styled.section`
-  //   background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-
-  // min-height: 100vh;
-  // padding: 223px 0 170px 0;
-  position: relative;
-  z-index: 0;
-
-  &::before {
-    z-index: -1;
-    position: absolute;
-    content: "";
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: ${({ theme }) => theme.colors.bgBannerV9};
-  }
-
   .banner-title {
     font-weight: 700;
     font-size: 60px;
@@ -45,21 +25,40 @@ const BannerWrapper = styled.section`
   }
 
   .gittu-banner-right {
+    background: ${({ theme }) => theme.colors.bgBannerV9};
     width: 512px;
+    border-radius: 16px;
     max-width: 100%;
-    // margin: auto
     position: relative;
 
     .overlay {
       position: absolute;
       z-index: 9;
-      top: 1%;
+      top: -50px;
       left: -60px;
       img {
         width: 120px;
         height: 120px;
         border-radius: 50%;
       }
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.6) 0%,
+        rgba(0, 0, 0, 0.9) 100%
+      );
+      z-index: 0;
+    }
+
+    > * {
+      position: relative;
+      z-index: 1;
     }
 
     .presale-live-btn {
@@ -141,9 +140,12 @@ const BannerWrapper = styled.section`
     position: relative;
 
     .gittu-banner-card-inner {
-      background: ${({ theme }) => theme.colors.white}1a;
+      // background: ${({ theme }) => theme.colors.white}1a;
+
+      background: rgba(14, 17, 23, 0.8);
       backdrop-filter: blur(5px);
-      border-radius: 20px;
+
+      border-radius: 16px;
       padding: 20px 40px 40px 40px;
       transform-style: preserve-3d;
       transition: transform 0.6s;
@@ -354,29 +356,31 @@ const BannerWrapper = styled.section`
   }
 
   @media screen and (max-width: 991px) {
-    padding: 158px 0 170px 0;
+    // padding: 158px 0 170px 0;
 
     .gittu-banner-left {
       margin-bottom: 120px;
     }
 
     .gittu-banner-right {
-      margin-left: 0px;
-      padding-left: 65px;
+      margin-left: 8px;
+      // padding-left: 65px;
 
       .overlay {
-        left: 0px;
+        left: -40px;
       }
     }
   }
 
   @media screen and (max-width: 575px) {
-    padding: 120px 0 120px 0;
+    // padding: 125px 0 120px 0;
 
     .gittu-banner-right {
+    width : 450px;
       padding-left: 0px;
       .overlay {
-        top: 2%;
+        top: -60px;
+        left: 0px;
         img {
           width: 90px;
           height: 90px;
@@ -396,7 +400,7 @@ const BannerWrapper = styled.section`
     }
 
     .gittu-banner-card {
-      padding: 20px 0px;
+      // padding: 20px 0px;
       .gittu-banner-card-inner {
         padding: 20px;
       }
