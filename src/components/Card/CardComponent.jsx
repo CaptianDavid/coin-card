@@ -348,10 +348,6 @@ const CardComponent = () => {
       );
       await switchChainAsync({ chainId: requiredChainId });
 
-      // Wait for network switch to complete
-      console.log("Waiting for network switch to complete...");
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
       // On mobile, be more lenient with verification since it often works even if verification fails
       if (isMobile) {
         console.log("Mobile detected - assuming network switch succeeded");
