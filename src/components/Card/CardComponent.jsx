@@ -17,8 +17,15 @@ import SelectDropdown from "../select/SelectDropdown";
 import CopyIframeButton from "../CopyIframeButton";
 import { coins } from "../../helpers";
 import useCardHook from "./useCardHook";
-import { useAccount, useConnect, useChainId, useDisconnect, useSwitchChain } from "wagmi";
+import {
+  useAccount,
+  useConnect,
+  useChainId,
+  useDisconnect,
+  useSwitchChain,
+} from "wagmi";
 import { ethers } from "ethers";
+import { CustomConnectButton } from "../CustomRainbowConnect";
 
 const CardComponent = () => {
   const { isConnected, address, chain, chainId: chain_id } = useAccount();
@@ -26,62 +33,71 @@ const CardComponent = () => {
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();
   const chainId = useChainId();
-  
+
   // Check if we're on mobile (must be declared first)
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  
+  const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent,
+    );
+
   // Mobile-specific connection state management
   const [mobileConnectionState, setMobileConnectionState] = useState({
     isConnected: false,
-    address: null
+    address: null,
   });
-  
+
   // Use appropriate connection state based on device
-  const effectiveIsConnected = isMobile ? mobileConnectionState.isConnected : isConnected;
+  const effectiveIsConnected = isMobile
+    ? mobileConnectionState.isConnected
+    : isConnected;
   const effectiveAddress = isMobile ? mobileConnectionState.address : address;
-  
-  
+
   // Initialize mobile connection state from localStorage
   useEffect(() => {
     if (isMobile) {
-      const savedConnection = localStorage.getItem('walletConnected');
-      const savedAddress = localStorage.getItem('walletAddress');
-      
-      if (savedConnection === 'true' && savedAddress) {
+      const savedConnection = localStorage.getItem("walletConnected");
+      const savedAddress = localStorage.getItem("walletAddress");
+
+      if (savedConnection === "true" && savedAddress) {
         setMobileConnectionState({
           isConnected: true,
-          address: savedAddress
+          address: savedAddress,
         });
-        console.log('Restored mobile connection from localStorage:', { address: savedAddress });
+        console.log("Restored mobile connection from localStorage:", {
+          address: savedAddress,
+        });
       }
     }
   }, [isMobile]);
-  
+
   // Update mobile connection state when wagmi state changes
   useEffect(() => {
     if (isMobile) {
-      console.log('Mobile connection effect triggered:', { isConnected, address });
-      
+      console.log("Mobile connection effect triggered:", {
+        isConnected,
+        address,
+      });
+
       if (isConnected && address) {
         // Wallet connected - update both states
         setMobileConnectionState({
           isConnected: true,
-          address: address
+          address: address,
         });
-        localStorage.setItem('walletConnected', 'true');
-        localStorage.setItem('walletAddress', address);
-        console.log('Mobile wallet connected and saved:', address);
+        localStorage.setItem("walletConnected", "true");
+        localStorage.setItem("walletAddress", address);
+        console.log("Mobile wallet connected and saved:", address);
       } else if (!isConnected && !address) {
         // Only clear if we're sure it's disconnected
-        const savedConnection = localStorage.getItem('walletConnected');
-        if (savedConnection !== 'true') {
+        const savedConnection = localStorage.getItem("walletConnected");
+        if (savedConnection !== "true") {
           setMobileConnectionState({
             isConnected: false,
-            address: null
+            address: null,
           });
-          localStorage.removeItem('walletConnected');
-          localStorage.removeItem('walletAddress');
-          console.log('Mobile wallet disconnected and cleared');
+          localStorage.removeItem("walletConnected");
+          localStorage.removeItem("walletAddress");
+          console.log("Mobile wallet disconnected and cleared");
         }
       }
     }
@@ -105,17 +121,17 @@ const CardComponent = () => {
   // Function to get required chain ID based on selected token
   const getRequiredChainId = (tokenSymbol) => {
     switch (tokenSymbol) {
-      case 'ETH':
+      case "ETH":
         return 1; // Ethereum
-      case 'BNB':
+      case "BNB":
         return 56; // BNB Chain
-      case 'MATIC':
+      case "MATIC":
         return 137; // Polygon
-      case 'AVAX':
+      case "AVAX":
         return 43114; // Avalanche
-      case 'USDT':
+      case "USDT":
         return 56; // BNB Chain (for USDT)
-      case 'USDC':
+      case "USDC":
         return 1; // Ethereum (for USDC)
       default:
         return 56; // Default to BNB Chain
@@ -124,8 +140,8 @@ const CardComponent = () => {
 
   // Check if user needs to switch networks
   const requiredChainId = getRequiredChainId(selected?.symbol);
-  const needsNetworkSwitch = effectiveIsConnected && chainId !== requiredChainId;
-
+  const needsNetworkSwitch =
+    effectiveIsConnected && chainId !== requiredChainId;
 
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -135,81 +151,86 @@ const CardComponent = () => {
   // Function to parse and format error messages
   const parseError = (error) => {
     const errorMessage = error?.message || error?.toString() || "Unknown error";
-    
+
     // Common error patterns and their user-friendly messages
     const errorPatterns = [
       {
         pattern: /user rejected/i,
-        message: "Transaction was cancelled by user"
+        message: "Transaction was cancelled by user",
       },
       {
         pattern: /insufficient funds/i,
-        message: "Insufficient balance for this transaction"
+        message: "Insufficient balance for this transaction",
       },
       {
         pattern: /gas required exceeds allowance/i,
-        message: "Transaction requires more gas. Try increasing gas limit."
+        message: "Transaction requires more gas. Try increasing gas limit.",
       },
       {
         pattern: /network error/i,
-        message: "Network connection error. Please check your internet connection."
+        message:
+          "Network connection error. Please check your internet connection.",
       },
       {
         pattern: /invalid BigNumberish/i,
-        message: "Invalid amount format. Please enter a valid number."
+        message: "Invalid amount format. Please enter a valid number.",
       },
       {
         pattern: /execution reverted/i,
-        message: "Transaction failed. The contract rejected the transaction."
+        message: "Transaction failed. The contract rejected the transaction.",
       },
       {
         pattern: /nonce too low/i,
-        message: "Transaction nonce error. Please try again."
+        message: "Transaction nonce error. Please try again.",
       },
       {
         pattern: /already known/i,
-        message: "Transaction already submitted. Please wait for confirmation."
+        message: "Transaction already submitted. Please wait for confirmation.",
       },
       {
         pattern: /replacement transaction underpriced/i,
-        message: "Transaction fee too low. Please try again."
+        message: "Transaction fee too low. Please try again.",
       },
       {
         pattern: /intrinsic gas too low/i,
-        message: "Gas limit too low. Please try again."
+        message: "Gas limit too low. Please try again.",
       },
       {
         pattern: /allowance/i,
-        message: "Token approval required. Please approve the transaction first."
+        message:
+          "Token approval required. Please approve the transaction first.",
       },
       {
         pattern: /enter amount/i,
-        message: "Please enter a valid amount"
+        message: "Please enter a valid amount",
       },
       {
         pattern: /minimum transaction amount/i,
-        message: "Minimum transaction amount is $10"
+        message: "Minimum transaction amount is $10",
       },
       {
         pattern: /no provider/i,
-        message: "Wallet not connected. Please connect your wallet first."
+        message: "Wallet not connected. Please connect your wallet first.",
       },
       {
         pattern: /unsupported chain/i,
-        message: "Unsupported blockchain network. Please switch to a supported network."
+        message:
+          "Unsupported blockchain network. Please switch to a supported network.",
       },
       {
         pattern: /contract not deployed/i,
-        message: "Smart contract not found. Please check the network."
+        message: "Smart contract not found. Please check the network.",
       },
       {
         pattern: /missing revert data/i,
-        message: "Transaction failed. The contract rejected the transaction or insufficient gas."
+        message:
+          "Transaction failed. The contract rejected the transaction or insufficient gas.",
       },
       {
         pattern: /call_exception/i,
-        message: "Contract call failed. Please check your token balance and try again."
-      }
+        message:
+          "Contract call failed. Please check your token balance and try again.",
+      },
     ];
 
     // Find matching pattern
@@ -223,7 +244,7 @@ const CardComponent = () => {
     if (errorMessage.length > 100) {
       return errorMessage.substring(0, 100) + "...";
     }
-    
+
     return errorMessage;
   };
 
@@ -242,14 +263,14 @@ const CardComponent = () => {
       setError(""); // Clear any previous errors
       setSuccess(""); // Clear any previous success messages
       setIsLoading(true);
-      
+      debugger;
       if (!effectiveIsConnected) {
-        // If wallet is not connected, just connect and return
+        // If wallet is not connected, show wallet selection modal
         if (connectors.length > 0) {
-          await connect({ connector: connectors[0] });
+          await connect();
           // On mobile, wait a bit for the connection to be established
           if (isMobile) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           }
           // After connecting, just return - don't proceed with transaction
           return;
@@ -261,10 +282,12 @@ const CardComponent = () => {
 
       // Check if we need to switch networks - show button instead of auto-switching
       if (needsNetworkSwitch) {
-        setError(`Please switch to ${selected.symbol} network first using the button below.`);
+        setError(
+          `Please switch to ${selected.symbol} network first using the button below.`,
+        );
         return;
       }
-      
+
       // Only proceed with transaction if wallet is connected and on correct network
       // Check if amount is entered and meets minimum
       if (!amount || Number(amount) <= 0) {
@@ -275,19 +298,21 @@ const CardComponent = () => {
         setError("Minimum transaction amount is $10");
         return;
       }
-      
+
       // For mobile, refresh connection state and double-check before proceeding
       if (isMobile) {
         refreshMobileConnection();
         if (!effectiveIsConnected) {
           setError("Wallet connection lost. Please reconnect your wallet.");
-      return;
+          return;
         }
       }
-      
+
       // Execute the transaction with success callback
       const result = await buyToken((txResult) => {
-        setSuccess("🎉 Transaction successful! Your STAYX tokens have been purchased and added to your wallet.");
+        setSuccess(
+          "🎉 Transaction successful! Your STAYX tokens have been purchased and added to your wallet.",
+        );
       });
       console.log("result trx", result);
     } catch (error) {
@@ -303,10 +328,10 @@ const CardComponent = () => {
     if (isMobile) {
       setMobileConnectionState({
         isConnected: false,
-        address: null
+        address: null,
       });
-      localStorage.removeItem('walletConnected');
-      localStorage.removeItem('walletAddress');
+      localStorage.removeItem("walletConnected");
+      localStorage.removeItem("walletAddress");
     }
     setError("");
     setSuccess("");
@@ -318,43 +343,58 @@ const CardComponent = () => {
       setIsSwitchingNetwork(true);
       setError("");
       setSuccess("");
-      
-      console.log(`Switching to ${selected.symbol} network (Chain ID: ${requiredChainId})`);
+
+      console.log(
+        `Switching to ${selected.symbol} network (Chain ID: ${requiredChainId})`,
+      );
       await switchChain({ chainId: requiredChainId });
-      
+
       // Wait for network switch to complete
-      console.log('Waiting for network switch to complete...');
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
+      console.log("Waiting for network switch to complete...");
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
       // On mobile, be more lenient with verification since it often works even if verification fails
       if (isMobile) {
-        console.log('Mobile detected - assuming network switch succeeded');
-        setSuccess(`✅ Network switch initiated! Please check your wallet and return to complete the purchase.`);
+        console.log("Mobile detected - assuming network switch succeeded");
+        setSuccess(
+          `✅ Network switch initiated! Please check your wallet and return to complete the purchase.`,
+        );
       } else {
         // Desktop: Verify the switch worked
         try {
           const provider = new ethers.BrowserProvider(window.ethereum);
           const network = await provider.getNetwork();
           const currentChainId = Number(network.chainId);
-          
-          console.log(`Desktop network switch verification: Current: ${currentChainId}, Required: ${requiredChainId}`);
-          
+
+          console.log(
+            `Desktop network switch verification: Current: ${currentChainId}, Required: ${requiredChainId}`,
+          );
+
           if (currentChainId === requiredChainId) {
-            setSuccess(`✅ Successfully switched to ${selected.symbol} network! You can now proceed with your purchase.`);
-            console.log(`✅ Successfully switched to ${selected.symbol} network!`);
+            setSuccess(
+              `✅ Successfully switched to ${selected.symbol} network! You can now proceed with your purchase.`,
+            );
+            console.log(
+              `✅ Successfully switched to ${selected.symbol} network!`,
+            );
           } else {
-            setError(`Network switch incomplete. Please try again or switch manually in your wallet.`);
-            console.log(`❌ Network switch failed. Current: ${currentChainId}, Required: ${requiredChainId}`);
+            setError(
+              `Network switch incomplete. Please try again or switch manually in your wallet.`,
+            );
+            console.log(
+              `❌ Network switch failed. Current: ${currentChainId}, Required: ${requiredChainId}`,
+            );
           }
         } catch (verifyError) {
-          console.error('Desktop network verification failed:', verifyError);
+          console.error("Desktop network verification failed:", verifyError);
           setError(`Network switch verification failed. Please try again.`);
         }
       }
-      
     } catch (switchError) {
-      console.error('Failed to switch network:', switchError);
-      setError(`Failed to switch network. Please switch to ${selected.symbol} network manually in your wallet.`);
+      console.error("Failed to switch network:", switchError);
+      setError(
+        `Failed to switch network. Please switch to ${selected.symbol} network manually in your wallet.`,
+      );
     } finally {
       setIsSwitchingNetwork(false);
     }
@@ -366,11 +406,11 @@ const CardComponent = () => {
       try {
         // Try to reconnect
         if (connectors.length > 0) {
-          await connect({ connector: connectors[0] });
+          await connect();
         }
       } catch (error) {
-        console.error('Failed to reconnect on mobile:', error);
-        setError('Failed to connect wallet. Please try again.');
+        console.error("Failed to reconnect on mobile:", error);
+        setError("Failed to connect wallet. Please try again.");
       }
     }
   };
@@ -378,23 +418,26 @@ const CardComponent = () => {
   // Force refresh mobile connection state
   const refreshMobileConnection = () => {
     if (isMobile) {
-      const savedConnection = localStorage.getItem('walletConnected');
-      const savedAddress = localStorage.getItem('walletAddress');
-      
-      console.log('Refreshing mobile connection:', { savedConnection, savedAddress });
-      
-      if (savedConnection === 'true' && savedAddress) {
+      const savedConnection = localStorage.getItem("walletConnected");
+      const savedAddress = localStorage.getItem("walletAddress");
+
+      console.log("Refreshing mobile connection:", {
+        savedConnection,
+        savedAddress,
+      });
+
+      if (savedConnection === "true" && savedAddress) {
         setMobileConnectionState({
           isConnected: true,
-          address: savedAddress
+          address: savedAddress,
         });
-        console.log('Mobile connection refreshed from localStorage');
+        console.log("Mobile connection refreshed from localStorage");
       } else {
         setMobileConnectionState({
           isConnected: false,
-          address: null
+          address: null,
         });
-        console.log('Mobile connection cleared - no saved state');
+        console.log("Mobile connection cleared - no saved state");
       }
     }
   };
@@ -436,7 +479,6 @@ const CardComponent = () => {
               </button>
             </div>
           )}
-
 
           <div className="gittu-banner-card ">
             <div className="gittu-banner-card-inner">
@@ -531,7 +573,9 @@ const CardComponent = () => {
 
                   <ul className="token-info-list mb-30">
                     <li>
-                      <p className="max-[310px]:max-w-[8rem]">Limited: Launch Bonus</p>
+                      <p className="max-[310px]:max-w-[8rem]">
+                        Limited: Launch Bonus
+                      </p>
 
                       <p>10%</p>
                     </li>
@@ -552,14 +596,16 @@ const CardComponent = () => {
                           <span className="text-orange-400 text-xs">!</span>
                         </div>
                         <div className="flex-1">
-                          <p className="text-orange-400 text-sm font-medium">Network Switch Required</p>
+                          <p className="text-orange-400 text-sm font-medium">
+                            Network Switch Required
+                          </p>
                           <p className="text-orange-300 text-xs mt-1">
                             Switch to {selected.symbol} network to continue
                           </p>
                         </div>
                       </div>
-                      <Button 
-                        onClick={handleSwitchNetwork} 
+                      <Button
+                        onClick={handleSwitchNetwork}
                         size="large"
                         disabled={isSwitchingNetwork}
                         className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
@@ -584,10 +630,14 @@ const CardComponent = () => {
                           <span className="text-red-400 text-xs">!</span>
                         </div>
                         <div className="flex-1">
-                          <p className="text-red-400 text-sm font-medium mb-1">Transaction Failed</p>
-                          <p className="text-red-300 text-sm leading-relaxed">{error}</p>
+                          <p className="text-red-400 text-sm font-medium mb-1">
+                            Transaction Failed
+                          </p>
+                          <p className="text-red-300 text-sm leading-relaxed">
+                            {error}
+                          </p>
                         </div>
-                        <button 
+                        <button
                           onClick={() => setError("")}
                           className="flex-shrink-0 text-red-400 hover:text-red-300 transition-colors"
                         >
@@ -605,10 +655,14 @@ const CardComponent = () => {
                           <span className="text-green-400 text-xs">✓</span>
                         </div>
                         <div className="flex-1">
-                          <p className="text-green-400 text-sm font-medium mb-1">Success!</p>
-                          <p className="text-green-300 text-sm leading-relaxed">{success}</p>
+                          <p className="text-green-400 text-sm font-medium mb-1">
+                            Success!
+                          </p>
+                          <p className="text-green-300 text-sm leading-relaxed">
+                            {success}
+                          </p>
                         </div>
-                        <button 
+                        <button
                           onClick={() => setSuccess("")}
                           className="flex-shrink-0 text-green-400 hover:text-green-300 transition-colors"
                         >
@@ -626,8 +680,12 @@ const CardComponent = () => {
                           <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
                         </div>
                         <div className="flex-1">
-                          <p className="text-blue-400 text-sm font-medium">Processing Transaction...</p>
-                          <p className="text-blue-300 text-xs">Please wait while we process your request</p>
+                          <p className="text-blue-400 text-sm font-medium">
+                            Processing Transaction...
+                          </p>
+                          <p className="text-blue-300 text-xs">
+                            Please wait while we process your request
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -642,24 +700,31 @@ const CardComponent = () => {
                     )}
                   </div> */}
 
-
-                  <Button 
-                    onClick={handleBuyToken} 
-                    size="large"
-                    disabled={isLoading || needsNetworkSwitch}
-                    className={isLoading || needsNetworkSwitch ? "opacity-50 cursor-not-allowed" : ""}
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Processing Transaction...
-                      </div>
-                    ) : needsNetworkSwitch ? (
-                      "Switch Network First"
-                    ) : (
-                      effectiveIsConnected ? "Buy Now" : "Connect Wallet"
-                    )}
-                  </Button>
+                  {effectiveIsConnected ? (
+                    <Button
+                      onClick={handleBuyToken}
+                      size="large"
+                      disabled={isLoading || needsNetworkSwitch}
+                      className={
+                        isLoading || needsNetworkSwitch
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      }
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Processing Transaction...
+                        </div>
+                      ) : needsNetworkSwitch ? (
+                        "Switch Network First"
+                      ) : (
+                        "Buy Now"
+                      )}
+                    </Button>
+                  ) : (
+                    <CustomConnectButton size="large" />
+                  )}
                 </div>
               ) : (
                 <div className="card-content">
