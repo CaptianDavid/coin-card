@@ -31,7 +31,7 @@ const CardComponent = () => {
   const { isConnected, address, chain, chainId: chain_id } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
-  const { switchChain } = useSwitchChain();
+  const { switchChainAsync } = useSwitchChain();
   const chainId = useChainId();
 
   // Check if we're on mobile (must be declared first)
@@ -263,7 +263,6 @@ const CardComponent = () => {
       setError(""); // Clear any previous errors
       setSuccess(""); // Clear any previous success messages
       setIsLoading(true);
-      debugger;
       if (!effectiveIsConnected) {
         // If wallet is not connected, show wallet selection modal
         if (connectors.length > 0) {
@@ -347,7 +346,7 @@ const CardComponent = () => {
       console.log(
         `Switching to ${selected.symbol} network (Chain ID: ${requiredChainId})`,
       );
-      await switchChain({ chainId: requiredChainId });
+      await switchChainAsync({ chainId: requiredChainId });
 
       // Wait for network switch to complete
       console.log("Waiting for network switch to complete...");
@@ -387,7 +386,9 @@ const CardComponent = () => {
           }
         } catch (verifyError) {
           console.error("Desktop network verification failed:", verifyError);
-          setError(`Network switch verification failed. Please try again.`);
+          setError(
+            `Network switch incomplete. Please try again or switch manually in your wallet.`,
+          );
         }
       }
     } catch (switchError) {
@@ -589,38 +590,39 @@ const CardComponent = () => {
                   </ul>
 
                   {/* Network Switch Button */}
-                  {needsNetworkSwitch && (
-                    <div className="mb-4 p-4 rounded-lg bg-orange-500/20 border border-orange-500/30 backdrop-blur-sm">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-500/30 flex items-center justify-center">
-                          <span className="text-orange-400 text-xs">!</span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-orange-400 text-sm font-medium">
-                            Network Switch Required
-                          </p>
-                          <p className="text-orange-300 text-xs mt-1">
-                            Switch to {selected.symbol} network to continue
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={handleSwitchNetwork}
-                        size="large"
-                        disabled={isSwitchingNetwork}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
-                      >
-                        {isSwitchingNetwork ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Switching Network...
+                  {needsNetworkSwitch &&
+                    !error?.includes("manually in your wallet") && (
+                      <div className="mb-4 p-4 rounded-lg bg-orange-500/20 border border-orange-500/30 backdrop-blur-sm">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-500/30 flex items-center justify-center">
+                            <span className="text-orange-400 text-xs">!</span>
                           </div>
-                        ) : (
-                          `Switch to ${selected.symbol} Network`
-                        )}
-                      </Button>
-                    </div>
-                  )}
+                          <div className="flex-1">
+                            <p className="text-orange-400 text-sm font-medium">
+                              Network Switch Required
+                            </p>
+                            <p className="text-orange-300 text-xs mt-1">
+                              Switch to {selected.symbol} network to continue
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={handleSwitchNetwork}
+                          size="large"
+                          disabled={isSwitchingNetwork}
+                          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
+                        >
+                          {isSwitchingNetwork ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              Switching Network...
+                            </div>
+                          ) : (
+                            `Switch to ${selected.symbol} Network`
+                          )}
+                        </Button>
+                      </div>
+                    )}
 
                   {/* Error Display */}
                   {error && (
@@ -700,31 +702,27 @@ const CardComponent = () => {
                     )}
                   </div> */}
 
-                  {effectiveIsConnected ? (
-                    <Button
-                      onClick={handleBuyToken}
-                      size="large"
-                      disabled={isLoading || needsNetworkSwitch}
-                      className={
-                        isLoading || needsNetworkSwitch
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
-                      }
-                    >
-                      {isLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Processing Transaction...
-                        </div>
-                      ) : needsNetworkSwitch ? (
-                        "Switch Network First"
-                      ) : (
-                        "Buy Now"
-                      )}
-                    </Button>
-                  ) : (
-                    <CustomConnectButton size="large" />
-                  )}
+                  <Button
+                    onClick={handleBuyToken}
+                    size="large"
+                    disabled={isLoading || needsNetworkSwitch}
+                    className={
+                      isLoading || needsNetworkSwitch
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Processing Transaction...
+                      </div>
+                    ) : needsNetworkSwitch ? (
+                      "Switch Network First"
+                    ) : (
+                      "Buy Now"
+                    )}
+                  </Button>
                 </div>
               ) : (
                 <div className="card-content">
@@ -764,27 +762,31 @@ const CardComponent = () => {
 
                   <CoinList coins={coins} selected={selected} />
 
-                  <button
-                    onClick={buyNowHandle}
-                    className="
-    w-full
-    bg-[#1EE8B7]
-    text-[#0e1117]
-    font-outfit font-bold
-    text-[16px] leading-[24px]
-    uppercase
-    px-8 py-4
-    rounded-full
-    shadow-lg
-    hover:bg-[#19c9a0]
-    hover:shadow-xl
-    active:scale-95
-    transition-all duration-300
-    flex items-center justify-center gap-2 cursor-pointer
-  "
-                  >
-                    {effectiveIsConnected ? "Buy now" : "Connect & Buy"}
-                  </button>
+                  {effectiveIsConnected ? (
+                    <button
+                      onClick={buyNowHandle}
+                      className="
+        w-full
+        bg-[#1EE8B7]
+        text-[#0e1117]
+        font-outfit font-bold
+        text-[16px] leading-[24px]
+        uppercase
+        px-8 py-4
+        rounded-full
+        shadow-lg
+        hover:bg-[#19c9a0]
+        hover:shadow-xl
+        active:scale-95
+        transition-all duration-300
+        flex items-center justify-center gap-2 cursor-pointer
+      "
+                    >
+                      Buy now
+                    </button>
+                  ) : (
+                    <CustomConnectButton size="large" />
+                  )}
                 </div>
               )}
             </div>
