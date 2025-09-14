@@ -120,9 +120,9 @@ const useCardHook = (chainId) => {
       }
       
       // Check minimum transaction amount (USD value)
-      if (Number(valueUsd) < 10) {
-        throw new Error('Minimum transaction amount is $10');
-      }
+      // if (Number(valueUsd) < 10) {
+      //   throw new Error('Minimum transaction amount is $10');
+      // }
       
       // Debug: Log all values before transaction
       console.log('=== TRANSACTION DEBUG ===');

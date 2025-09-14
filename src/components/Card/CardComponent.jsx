@@ -5,6 +5,7 @@ import { MdLogout } from "react-icons/md";
 import PresaleLiveTextIcon from "../../assets/icons/presale-live-text.svg";
 import NextLogo from "../../assets/icons/next.png";
 import CoinStack from "../../assets/icons/coinStack.png";
+import { LuArrowRightToLine } from "react-icons/lu";
 
 import BannerWrapper from "./Banner.style";
 import Countdown from "../countdown/CountDown";
@@ -241,7 +242,7 @@ const CardComponent = () => {
   return (
     <BannerWrapper>
       <div className="flex items-center justify-center mx-auto px-3 pb-6 pt-20">
-        <div className="gittu-banner-right rounded-[18px] relative  ">
+        <div className="gittu-banner-right rounded-[18px] relative pb-7 sm:pb-5">
           <div className="overlay">
             <a href="https://stayx.net/" className="presale-live-btn">
               <img src={PresaleLiveTextIcon} alt="Presale live" />
@@ -302,7 +303,7 @@ const CardComponent = () => {
                     </h2>
                   </div>
 
-                  <div className="presale-item mb-4">
+                  <div className="presale-item max-[602px]:mb-4 mb-6">
                     <div className="presale-item-inner">
                       <h6>Select Token</h6>
                       <SelectDropdown
@@ -471,29 +472,33 @@ const CardComponent = () => {
                     </div>
                   )}
 
-                  {address ? (
+                  {!address ? (
                     <button
                       onClick={handleBuyToken}
                       disabled={isLoading || needsNetworkSwitch}
-                      className={`btn ${
-                        isLoading || needsNetworkSwitch
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
-                      } ${needsNetworkSwitch && "hidden"} `}
+                      className={`btn disabled:opacity-50 disabled:cursor-not-allowed ${
+                        needsNetworkSwitch && "hidden"
+                      } `}
                     >
                       {isLoading ? (
                         <div className="flex items-center justify-center gap-5 w-full">
                           {/* Spinner */}
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"></div>
                           {/* Text */}
-                          <span>Processing <span className="hidden sm:inline">Transaction</span>...</span>
+                          <span>
+                            Processing{" "}
+                            <span className="hidden sm:inline">
+                              Transaction
+                            </span>
+                            ...
+                          </span>
                         </div>
                       ) : (
                         <>
                           <img
                             src={CoinStack}
                             alt=""
-                            className="size-6 sm:size-7 text-white icon-white "
+                            className="size-6 md:size-7 text-white icon-white "
                           />
                           <span class="absolute left-1/2 transform -translate-x-1/2">
                             Claim Your STAYX
@@ -532,13 +537,9 @@ const CardComponent = () => {
 
                   <CoinList coins={coins} selected={selected} />
 
-                  {address ? (
+                  {!address ? (
                     <button onClick={buyNowHandle} className="btn">
-                      <img
-                        src={NextLogo}
-                        alt=""
-                        className="size-6 sm:size-7 text-white icon-white "
-                      />
+                      <LuArrowRightToLine className="size-6 md:size-7 text-white " />
                       <span class="absolute left-1/2 transform -translate-x-1/2">
                         Continue
                       </span>

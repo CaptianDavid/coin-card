@@ -24,35 +24,6 @@ const BannerWrapper = styled.section`
       margin-top: 30px;
     }
   }
-  // .btn {
-  //   position: relative;
-  //   display: inline-flex;
-  //   align-items: center;
-  //   width: 100%;
-  //   text-transform: uppercase;
-  //   justify-content: center;
-  //   padding: 17px;
-  //   font-size: 15px;
-  //   font-weight: 700;
-  //   border-radius: 30px;
-  //   background: transparent;
-  //   background: linear-gradient(
-  //     90deg,
-  //     #1565d8 0%,
-  //     #1565d8 92%,
-  //     rgba(51, 214, 192, 0.7) 100%
-  //   );
-
-  //   color: #fff;
-  //   cursor: pointer;
-  //   overflow: hidden;
-  //   transition: all 0.3s ease;
-  //   z-index: 1;
-  // }
-
-  // .btn:hover {
-  //   filter: brightness(1.08);
-  // }
 
   .btn {
     position: relative;
@@ -488,7 +459,8 @@ const BannerWrapper = styled.section`
       line-height: 50px;
     }
     .btn {
-      font-size: 15px;
+      font-size: 14px;
+      
     }
 
     .gittu-banner-left {
