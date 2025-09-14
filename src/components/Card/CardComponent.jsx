@@ -3,9 +3,9 @@ import { FiArrowDownRight } from "react-icons/fi";
 import { HiArrowLeft } from "react-icons/hi2";
 import { MdLogout } from "react-icons/md";
 import PresaleLiveTextIcon from "../../assets/icons/presale-live-text.svg";
+import NextLogo from "../../assets/icons/next.png";
+import CoinStack from "../../assets/icons/coinStack.png";
 
-import Abstrac1 from "../../assets/abstrac-1.png";
-import Abstrac2 from "../../assets/abstrac-2.png";
 import BannerWrapper from "./Banner.style";
 import Countdown from "../countdown/CountDown";
 import Progressbar from "../progessbar/Progessbar";
@@ -28,82 +28,78 @@ import {
 import ConnectButton from "../ConnectButton";
 
 const errorPatterns = [
-      {
-        pattern: /user rejected/i,
-        message: "Transaction was cancelled by user",
-      },
-      {
-        pattern: /insufficient funds/i,
-        message: "Insufficient balance for this transaction",
-      },
-      {
-        pattern: /gas required exceeds allowance/i,
-        message: "Transaction requires more gas. Try increasing gas limit.",
-      },
-      {
-        pattern: /network error/i,
-        message:
-          "Network connection error. Please check your internet connection.",
-      },
-      {
-        pattern: /invalid BigNumberish/i,
-        message: "Invalid amount format. Please enter a valid number.",
-      },
-      {
-        pattern: /execution reverted/i,
-        message: "Transaction failed. The contract rejected the transaction.",
-      },
-      {
-        pattern: /nonce too low/i,
-        message: "Transaction nonce error. Please try again.",
-      },
-      {
-        pattern: /already known/i,
-        message: "Transaction already submitted. Please wait for confirmation.",
-      },
-      {
-        pattern: /replacement transaction underpriced/i,
-        message: "Transaction fee too low. Please try again.",
-      },
-      {
-        pattern: /intrinsic gas too low/i,
-        message: "Gas limit too low. Please try again.",
-      },
-      {
-        pattern: /allowance/i,
-        message:
-          "Token approval required. Please approve the transaction first.",
-      },
-      {
-        pattern: /enter amount/i,
-        message: "Please enter a valid amount",
-      },
-      {
-        pattern: /no provider/i,
-        message: "Wallet not connected. Please connect your wallet first.",
-      },
-      {
-        pattern: /unsupported chain/i,
-        message:
-          "Unsupported blockchain network. Please switch to a supported network.",
-      },
-      {
-        pattern: /contract not deployed/i,
-        message: "Smart contract not found. Please check the network.",
-      },
-      {
-        pattern: /missing revert data/i,
-        message:
-          "Transaction failed. The contract rejected the transaction or insufficient gas.",
-      },
-      {
-        pattern: /call_exception/i,
-        message:
-          "Contract call failed. Please check your token balance and try again.",
-      },
-    ];
-
-
+  {
+    pattern: /user rejected/i,
+    message: "Transaction was cancelled by user",
+  },
+  {
+    pattern: /insufficient funds/i,
+    message: "Insufficient balance for this transaction",
+  },
+  {
+    pattern: /gas required exceeds allowance/i,
+    message: "Transaction requires more gas. Try increasing gas limit.",
+  },
+  {
+    pattern: /network error/i,
+    message: "Network connection error. Please check your internet connection.",
+  },
+  {
+    pattern: /invalid BigNumberish/i,
+    message: "Invalid amount format. Please enter a valid number.",
+  },
+  {
+    pattern: /execution reverted/i,
+    message: "Transaction failed. The contract rejected the transaction.",
+  },
+  {
+    pattern: /nonce too low/i,
+    message: "Transaction nonce error. Please try again.",
+  },
+  {
+    pattern: /already known/i,
+    message: "Transaction already submitted. Please wait for confirmation.",
+  },
+  {
+    pattern: /replacement transaction underpriced/i,
+    message: "Transaction fee too low. Please try again.",
+  },
+  {
+    pattern: /intrinsic gas too low/i,
+    message: "Gas limit too low. Please try again.",
+  },
+  {
+    pattern: /allowance/i,
+    message: "Token approval required. Please approve the transaction first.",
+  },
+  {
+    pattern: /enter amount/i,
+    message: "Please enter a valid amount",
+  },
+  {
+    pattern: /no provider/i,
+    message: "Wallet not connected. Please connect your wallet first.",
+  },
+  {
+    pattern: /unsupported chain/i,
+    message:
+      "Unsupported blockchain network. Please switch to a supported network.",
+  },
+  {
+    pattern: /contract not deployed/i,
+    message: "Smart contract not found. Please check the network.",
+  },
+  {
+    pattern: /missing revert data/i,
+    message:
+      "Transaction failed. The contract rejected the transaction or insufficient gas.",
+  },
+  {
+    pattern: /call_exception/i,
+    message:
+      "Contract call failed. Please check your token balance and try again.",
+  },
+];
 
 const CardComponent = () => {
   const { isConnected, address, chain, chainId: chain_id } = useAccount();
@@ -186,7 +182,7 @@ const CardComponent = () => {
       }
 
       // Only proceed with transaction if wallet is connected and on correct network
-      
+
       if (!amount || Number(amount) <= 0) {
         setError("Please enter a valid amount");
         return;
@@ -300,24 +296,6 @@ const CardComponent = () => {
                     <HiArrowLeft />
                   </button>
 
-                  {/* <div className="presale-item start mb-5 flex flex-col">
-                    <div>
-                      <h2 className="!text-xl">LOCK YOUR STAYX at PRESALE PRICING</h2>
-                    </div>
-                    <div className="presale-item-inner">
-                      <h5 className="font-semibold uppercase text-white">
-                        Balance: {userBalance}
-                        Balance: 0
-                      </h5>
-                    </div>
-                    <div className="presale-item-inner">
-                      <h5 className="font-semibold uppercase text-white">
-                        Balance: {userTokenBalance.toLocaleString("en-US")}{" "}
-                        {tokenSymbol}
-                        Balance : 0 StayX
-                      </h5>
-                    </div>
-                  </div> */}
                   <div className="mb-7 !text-center flex items-center justify-center">
                     <h2 className="!text-xl text-white !font-[400]  text-center uppercase">
                       LOCK YOUR STAYX at PRESALE PRICING
@@ -375,7 +353,7 @@ const CardComponent = () => {
                   <ul className="token-info-list mb-30">
                     <li>
                       <p className="max-[310px]:max-w-[8rem]">
-                        Limited: Launch Bonus
+                        Limited Time Early Access
                       </p>
 
                       <p>10%</p>
@@ -493,15 +471,6 @@ const CardComponent = () => {
                     </div>
                   )}
 
-                  {/* <div className="presale-item-msg">
-                    {presaleStatus && (
-                      <div className="presale-item-msg__content">
-                        <img src={StatusIcon} alt="icon" />
-                        <p>{presaleStatus}</p>
-                      </div>
-                    )}
-                  </div> */}
-
                   {address ? (
                     <button
                       onClick={handleBuyToken}
@@ -510,17 +479,26 @@ const CardComponent = () => {
                         isLoading || needsNetworkSwitch
                           ? "opacity-50 cursor-not-allowed"
                           : ""
-                      }`}
+                      } ${needsNetworkSwitch && "hidden"} `}
                     >
                       {isLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Processing Transaction...
+                        <div className="flex items-center justify-center gap-5 w-full">
+                          {/* Spinner */}
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"></div>
+                          {/* Text */}
+                          <span>Processing <span className="hidden sm:inline">Transaction</span>...</span>
                         </div>
-                      ) : needsNetworkSwitch ? (
-                        "Switch Network First"
                       ) : (
-                        "Claim Yours"
+                        <>
+                          <img
+                            src={CoinStack}
+                            alt=""
+                            className="size-6 sm:size-7 text-white icon-white "
+                          />
+                          <span class="absolute left-1/2 transform -translate-x-1/2">
+                            Claim Your STAYX
+                          </span>
+                        </>
                       )}
                     </button>
                   ) : (
@@ -556,7 +534,14 @@ const CardComponent = () => {
 
                   {address ? (
                     <button onClick={buyNowHandle} className="btn">
-                      Continue
+                      <img
+                        src={NextLogo}
+                        alt=""
+                        className="size-6 sm:size-7 text-white icon-white "
+                      />
+                      <span class="absolute left-1/2 transform -translate-x-1/2">
+                        Continue
+                      </span>
                     </button>
                   ) : (
                     <ConnectButton />
