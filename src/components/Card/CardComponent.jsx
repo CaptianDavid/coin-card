@@ -472,7 +472,7 @@ const CardComponent = () => {
                     </div>
                   )}
 
-                  {!address ? (
+                  {address ? (
                     <button
                       onClick={handleBuyToken}
                       disabled={isLoading || needsNetworkSwitch}
@@ -537,7 +537,7 @@ const CardComponent = () => {
 
                   <CoinList coins={coins} selected={selected} />
 
-                  {!address ? (
+                  {address ? (
                     <button onClick={buyNowHandle} className="btn">
                       <LuArrowRightToLine className="size-6 md:size-7 text-white " />
                       <span class="absolute left-1/2 transform -translate-x-1/2">
