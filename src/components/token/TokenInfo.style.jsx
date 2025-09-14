@@ -37,9 +37,9 @@ const TokenInfoWrapper = styled.ul`
    font-size: 16px !important;
    }
   }
-  @media screen and (max-width: 350px) {
+  @media screen and (max-width: 340px) {
    .pTag {
-   max-width: 10rem;
+   max-width: 8rem;
    }
   }
   @media screen and (max-width: 300px) {

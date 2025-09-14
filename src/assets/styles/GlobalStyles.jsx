@@ -2,13 +2,13 @@ import { createGlobalStyle } from "styled-components";
 
 const GlobalStyles = createGlobalStyle` 
 ::-moz-selection {
-    background: ${({ theme }) => theme.colors.primary};
+    // background: ${({ theme }) => theme.colors.primary};
     text-shadow: none;
     color: ${({ theme }) => theme.colors.white};
 }
 
 ::selection {
-    background: ${({ theme }) => theme.colors.primary};
+    // background: ${({ theme }) => theme.colors.primary};
     text-shadow: none;
     color: ${({ theme }) => theme.colors.white};
 } 

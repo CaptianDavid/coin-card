@@ -25,7 +25,7 @@ const TokenInfo = ({ variant }) => {
           <p className="hidden md:block">STAYX </p> <p className="pTag ">Stablecoin Conversion Point</p>
         </span>
 
-        <h6> $10</h6>
+        <h6> $1</h6>
       </li>
     </TokenInfoWrapper>
   );

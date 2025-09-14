@@ -20,7 +20,7 @@ import {
   walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 
-const projectId = "0a125e3a4251eb58c540988c282cdb2d";
+const projectId = "27662a48630e414748d213813262a714";
 
 const connectors = connectorsForWallets(
   [

@@ -8,7 +8,14 @@ import { TOKENS } from "../contracts/tokens";
 const PresaleABI = PresaleABIraw.default || PresaleABIraw;
 const ERC20ABI = ERC20ABIraw.default || ERC20ABIraw;
 
-export async function buy({ provider, user, chainId, presaleAddress, payAssetKey, amountHuman }) {
+export async function buy({
+  provider,
+  user,
+  chainId,
+  presaleAddress,
+  payAssetKey,
+  amountHuman,
+}) {
   console.log("=== PURCHASE DEBUG ===");
   console.log("chainId:", chainId);
   console.log("presaleAddress:", presaleAddress);
@@ -21,26 +28,44 @@ export async function buy({ provider, user, chainId, presaleAddress, payAssetKey
   // Check if contract exists
   const code = await provider.getCode(presaleAddress);
   if (code === "0x") {
-    throw new Error(`No contract found at address ${presaleAddress} on chain ${chainId}`);
+    throw new Error(
+      `No contract found at address ${presaleAddress} on chain ${chainId}`
+    );
   }
 
   // Get token configuration
   const chainTokens = TOKENS[chainId];
   if (!chainTokens) throw new Error("Unsupported chain: " + chainId);
   const tokenCfg = chainTokens[payAssetKey];
-  if (!tokenCfg) throw new Error("Unsupported pay asset on this chain: " + payAssetKey);
+  if (!tokenCfg)
+    throw new Error("Unsupported pay asset on this chain: " + payAssetKey);
 
   console.log("Token config:", tokenCfg);
 
   if (tokenCfg.kind === "native") {
-    return await buyWithNativeToken(presaleAddress, amountHuman, tokenCfg, provider);
+    return await buyWithNativeToken(
+      presaleAddress,
+      amountHuman,
+      tokenCfg,
+      provider
+    );
   } else {
-    return await buyWithERC20Token(presaleAddress, amountHuman, tokenCfg, provider);
+    return await buyWithERC20Token(
+      presaleAddress,
+      amountHuman,
+      tokenCfg,
+      provider
+    );
   }
 }
 
 // === Handle native token purchases (BNB/ETH/etc.) ===
-async function buyWithNativeToken(presaleAddress, amountHuman, tokenCfg, provider) {
+async function buyWithNativeToken(
+  presaleAddress,
+  amountHuman,
+  tokenCfg,
+  provider
+) {
   const value = parseUnits(amountHuman, 18);
   const signer = await provider.getSigner();
   const presale = new Contract(presaleAddress, PresaleABI, signer);
@@ -51,19 +76,10 @@ async function buyWithNativeToken(presaleAddress, amountHuman, tokenCfg, provide
 
   try {
     let tx;
-    try {
-      const est = await presale.estimateGas.buyWithBNB({ value });
-      tx = await presale.buyWithBNB({
-        value,
-        gasLimit: (est * 12n) / 10n, // +20% buffer
-      });
-    } catch (err) {
-      console.warn("estimateGas failed for buyWithBNB, using fallback gas:", err);
-      tx = await presale.buyWithBNB({
-        value,
-        gasLimit: 300000n,
-      });
-    }
+
+    tx = await presale.buyWithBNB({
+      value,
+    });
 
     const receipt = await tx.wait();
     console.log("Native buy confirmed:", receipt.transactionHash);
@@ -75,7 +91,12 @@ async function buyWithNativeToken(presaleAddress, amountHuman, tokenCfg, provide
 }
 
 // === Handle ERC20 token purchases (USDT/USDC/etc.) ===
-async function buyWithERC20Token(presaleAddress, amountHuman, tokenCfg, provider) {
+async function buyWithERC20Token(
+  presaleAddress,
+  amountHuman,
+  tokenCfg,
+  provider
+) {
   const amount = parseUnits(amountHuman, tokenCfg.decimals);
   const signer = await provider.getSigner();
   const presale = new Contract(presaleAddress, PresaleABI, signer);
@@ -92,24 +113,14 @@ async function buyWithERC20Token(presaleAddress, amountHuman, tokenCfg, provider
     // ✅ FIX: Convert to BigNumber and use .lt for comparison
     const allowanceBN = BigInt(allowance.toString());
     const amountBN = BigInt(amount.toString());
-    
+
     if (allowanceBN < amountBN) {
       console.log("Allowance insufficient, approving amount...");
       // Use 2x the required amount instead of MaxUint256 to avoid security warnings
       const approvalAmount = amount * 2n;
-      try {
-        const estApprove = await erc20.estimateGas.approve(presaleAddress, approvalAmount);
-        const approveTx = await erc20.approve(presaleAddress, approvalAmount, {
-          gasLimit: (estApprove * 12n) / 10n,
-        });
-        await approveTx.wait();
-      } catch (err) {
-        console.warn("estimateGas failed for approve, using fallback gas:", err);
-        const approveTx = await erc20.approve(presaleAddress, approvalAmount, {
-          gasLimit: 100000n,
-        });
-        await approveTx.wait();
-      }
+      const approveTx = await erc20.approve(presaleAddress, approvalAmount);
+      await approveTx.wait();
+
       console.log("Approval confirmed");
     } else {
       console.log("Sufficient allowance already granted");
@@ -117,17 +128,8 @@ async function buyWithERC20Token(presaleAddress, amountHuman, tokenCfg, provider
 
     // Step 2: Buy with token
     let buyTx;
-    try {
-      const estBuy = await presale.estimateGas.buyWithToken(tokenCfg.address, amount);
-      buyTx = await presale.buyWithToken(tokenCfg.address, amount, {
-        gasLimit: (estBuy * 12n) / 10n,
-      });
-    } catch (err) {
-      console.warn("estimateGas failed for buyWithToken, using fallback gas:", err);
-      buyTx = await presale.buyWithToken(tokenCfg.address, amount, {
-        gasLimit: 300000n,
-      });
-    }
+
+    buyTx = await presale.buyWithToken(tokenCfg.address, amount);
 
     const receipt = await buyTx.wait();
     console.log("ERC20 buy confirmed:", receipt.transactionHash);

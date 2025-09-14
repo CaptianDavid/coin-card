@@ -20,7 +20,7 @@ const useCardHook = (chainId) => {
     setUserBalance,
   } = usePresaleData();
   
-  const [stageEnd, setStageEnd] = useState(1759284000);
+  const [stageEnd, setStageEnd] = useState(1759905412+3600);
 
   const [selected, setSelected] = useState(
     coins.find((c) => c.symbol === "BNB")
@@ -28,6 +28,13 @@ const useCardHook = (chainId) => {
   const [amount, setAmount] = useState("");
   const [prices, setPrices] = useState({});
   const [isBuyNow, setIsBuyNow] = useState(false);
+
+
+  useEffect(() => {
+  
+    console.log(selected," <== selected token in useCardHook");
+    
+  }, [selected]);
 
   // Function to map token symbol to payAssetKey
   const getPayAssetKey = (tokenSymbol) => {
@@ -81,7 +88,7 @@ const useCardHook = (chainId) => {
     "usd-coin": 1,      // USDC fallback price
   };
 
-  const priceUsd = STABLECOINS.includes(selected.symbol)
+  const priceUsd = selected.isStable
     ? 1
     : prices[selected.id]?.usd || FALLBACK_PRICES[selected.id] || 0;
   const valueUsd = amount ? amount * priceUsd : ""; // ✅ empty if no input
@@ -128,7 +135,7 @@ const useCardHook = (chainId) => {
       console.log('========================');
       
       // Execute the transaction with the amount and current chainId
-      const result = await presaleBuyToken(amount, chainId);
+      const result = await presaleBuyToken(amount, chainId,selected);
       console.log('Transaction successful:', result);
       
       // Reset form on success
