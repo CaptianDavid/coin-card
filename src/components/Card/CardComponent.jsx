@@ -3,9 +3,8 @@ import { FiArrowDownRight } from "react-icons/fi";
 import { HiArrowLeft } from "react-icons/hi2";
 import { MdLogout } from "react-icons/md";
 import PresaleLiveTextIcon from "../../assets/icons/presale-live-text.svg";
-import NextLogo from "../../assets/icons/next.png";
 import CoinStack from "../../assets/icons/coinStack.png";
-import { LuArrowRightToLine } from "react-icons/lu";
+import ArrowRight from "../../assets/icons/arrow-right.png";
 
 import BannerWrapper from "./Banner.style";
 import Countdown from "../countdown/CountDown";
@@ -497,7 +496,7 @@ const CardComponent = () => {
                         <>
                           <img
                             src={CoinStack}
-                            alt=""
+                            alt="coin-stack"
                             className="size-6 md:size-7 text-white icon-white "
                           />
                           <span class="absolute left-1/2 transform -translate-x-1/2">
@@ -539,7 +538,11 @@ const CardComponent = () => {
 
                   {address ? (
                     <button onClick={buyNowHandle} className="btn">
-                      <LuArrowRightToLine className="size-6 md:size-7 text-white " />
+                      <img
+                        src={ArrowRight}
+                        alt="arrow-right"
+                        className="size-6 md:size-7 text-white icon-white "
+                      />
                       <span class="absolute left-1/2 transform -translate-x-1/2">
                         Continue
                       </span>
