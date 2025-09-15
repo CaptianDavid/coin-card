@@ -241,7 +241,7 @@ const CardComponent = () => {
   return (
     <BannerWrapper>
       <div className="flex items-center justify-center mx-auto px-3 pb-6 pt-20">
-        <div className="gittu-banner-right rounded-[18px] relative pb-7 sm:pb-5">
+        <div className="gittu-banner-right rounded-[18px] relative pb-7 sm:pb-4">
           <div className="overlay">
             <a href="https://stayx.net/" className="presale-live-btn">
               <img src={PresaleLiveTextIcon} alt="Presale live" />

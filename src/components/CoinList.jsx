@@ -5,7 +5,7 @@ const CoinList = ({ coins }) => {
   const coinsLoop = [...coins, ...coins];
 
   return (
-    <div className="mt-6 mb-8 overflow-x-auto scrollbar-hide scroll-container">
+    <div className="mt-6 mb-11 overflow-x-auto scrollbar-hide scroll-container">
       <div className="flex gap-3  scroll-track">
         {coinsLoop.map((coin, idx) => (
           <div
