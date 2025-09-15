@@ -15,8 +15,8 @@ const TokenInfoWrapper = styled.ul`
     border-bottom: 1px solid ${({ theme }) => theme.colors.white}1a;
   }
   li h6 {
-  font-size: 19px !important;
-  font-weight: 600 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
   }
   li span,
   li p,
@@ -26,26 +26,25 @@ const TokenInfoWrapper = styled.ul`
     line-height: 30px;
     color: ${({ theme }) => theme.colors.white};
   }
-  
 
   @media screen and (max-width: 480px) {
-   li h6{
-   font-size: 17px !important;
-   }
-   li span,
-   li p {
-   font-size: 16px !important;
-   }
+    li h6 {
+      font-size: 17px !important;
+    }
+    li span,
+    li p {
+      font-size: 16px !important;
+    }
   }
   @media screen and (max-width: 340px) {
-   .pTag {
-   max-width: 8rem;
-   }
+    .pTag {
+      max-width: 8rem;
+    }
   }
   @media screen and (max-width: 300px) {
-   .pTag {
-   max-width: 8rem;
-   }
+    .pTag {
+      max-width: 8rem;
+    }
   }
   ${({ variant }) =>
     variant === "v2" &&
