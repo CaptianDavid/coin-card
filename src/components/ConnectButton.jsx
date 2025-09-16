@@ -20,7 +20,7 @@ export default function ConnectButton({ size = "large", ...props }) {
       ) : (
         <>
           <PiWallet className="size-6 sm:size-7 " />
-          <span class="absolute left-1/2 transform -translate-x-1/2">
+          <span className="absolute left-1/2 transform -translate-x-1/2">
             Connect Wallet
           </span>
         </>

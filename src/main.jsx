@@ -6,14 +6,15 @@ import { ThemeProvider } from "styled-components";
 import ThemeStyles from "./assets/styles/ThemeStyles.jsx";
 import GlobalStyles from "./assets/styles/GlobalStyles.jsx";
 import Web3ModalProvider from "./context/Web3ModalProvider.jsx";
+import CustomRainbowKit from "./components/CustomRainbowKit.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <Web3ModalProvider>
+    <CustomRainbowKit>
       <ThemeProvider theme={ThemeStyles}>
         <GlobalStyles />
         <App />
       </ThemeProvider>
-    </Web3ModalProvider>
+    </CustomRainbowKit>
   </StrictMode>
 );

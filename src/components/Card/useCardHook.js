@@ -20,7 +20,7 @@ const useCardHook = (chainId) => {
     setUserBalance,
   } = usePresaleData();
   
-  const [stageEnd, setStageEnd] = useState(1759905412+3600);
+  const [stageEnd, setStageEnd] = useState(Math.floor(Date.now() / 1000) + 2332800);
 
   const [selected, setSelected] = useState(
     coins.find((c) => c.symbol === "BNB")

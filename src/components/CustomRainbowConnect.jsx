@@ -1,5 +1,6 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import ButtonWrapper from "./button/Button.style";
+import { PiWallet } from "react-icons/pi";
 
 export function CustomConnectButton({ size = "large", ...props }) {
   return (
@@ -23,36 +24,43 @@ export function CustomConnectButton({ size = "large", ...props }) {
         return (
           <div>
             {!connected ? (
-              <ButtonWrapper onClick={openConnectModal} size={size} {...props}>
-                Connect Wallet
-              </ButtonWrapper>
+              <button
+                onClick={openConnectModal}
+                className="btn active:scale-95"
+              >
+                <PiWallet className="size-6 sm:size-7 " />
+                <span className="absolute left-1/2 transform -translate-x-1/2">
+                  Connect Wallet
+                </span>
+              </button>
             ) : chain.unsupported ? (
-              <ButtonWrapper
-                onClick={openChainModal}
-                size={size}
-                style={{
-                  background:
-                    "linear-gradient(90deg, #ff6b6b 0%, #ff8e8e 100%)",
-                  color: "#0e1117",
-                }}
-                {...props}
-              >
-                Wrong Network
-              </ButtonWrapper>
+              // <ButtonWrapper
+              //   onClick={openChainModal}
+              //   size={size}
+              //   style={{
+              //     background:
+              //       "linear-gradient(90deg, #ff6b6b 0%, #ff8e8e 100%)",
+              //     color: "#0e1117",
+              //   }}
+              //   {...props}
+              // >
+              //   Wrong Network
+              // </ButtonWrapper>
+              <button onClick={openChainModal} className="btn">
+                <div className="flex items-center justify-center w-full">
+                  Wrong Network
+                </div>
+              </button>
             ) : (
-              <ButtonWrapper
+              <button
                 onClick={openAccountModal}
-                size={size}
-                style={{
-                  background:
-                    "linear-gradient(90deg, #1dff96 0%, #bcff7b 100%)",
-                  color: "#0e1117",
-                }}
-                {...props}
+                className="btn "
               >
-                {account.displayName}
-                {account.displayBalance ? ` (${account.displayBalance})` : ""}
-              </ButtonWrapper>
+                <div className="flex items-center justify-center w-full">
+                  {account.displayName}
+                  {account.displayBalance ? ` (${account.displayBalance})` : ""}
+                </div>
+              </button>
             )}
           </div>
         );
